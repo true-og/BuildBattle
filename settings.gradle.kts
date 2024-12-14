@@ -18,4 +18,4 @@
  *
  */
 
-rootProject.name = "buildbattle"
+rootProject.name = "BuildBattle"

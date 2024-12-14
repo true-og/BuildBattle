@@ -40,8 +40,8 @@ repositories {
 
 dependencies {
     implementation("plugily.projects:MiniGamesBox-Classic:1.3.13") { isTransitive = false }
-    compileOnly("org.spigotmc:spigot-api:1.20.4-R0.1-SNAPSHOT")
-    compileOnly("io.papermc.paper:paper-api:1.20.4-R0.1-SNAPSHOT")
+    compileOnly("org.spigotmc:spigot-api:1.19.4-R0.1-SNAPSHOT")
+    compileOnly("io.papermc.paper:paper-api:1.19.4-R0.1-SNAPSHOT")
     compileOnly("net.citizensnpcs:citizensapi:2.0.31-SNAPSHOT")
     compileOnly("org.jetbrains:annotations:24.0.1")
 }
