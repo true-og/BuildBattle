@@ -31,7 +31,7 @@ repositories {
     maven("https://hub.spigotmc.org/nexus/content/repositories/snapshots/")
     maven("https://oss.sonatype.org/content/repositories/snapshots")
     maven("https://oss.sonatype.org/content/repositories/central")
-    maven(uri("https://papermc.io/repo/repository/maven-public/"))
+    maven(uri("https://repo.papermc.io/repository/maven-public/"))
     maven(uri("https://maven.plugily.xyz/releases"))
     maven(uri("https://maven.plugily.xyz/snapshots"))
     maven(uri("https://repo.citizensnpcs.co/"))
