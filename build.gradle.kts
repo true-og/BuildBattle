@@ -21,9 +21,9 @@
 
 plugins {
     id("signing")
-    `maven-publish`
-    id("com.github.johnrengelman.shadow") version "8.1.1"
+    id("com.gradleup.shadow") version "8.3.5"
     java
+	eclipse
 }
 
 repositories {
@@ -76,32 +76,4 @@ tasks {
         options.encoding = "UTF-8"
     }
 
-}
-
-
-
-publishing {
-    repositories {
-        maven {
-            name = "Releases"
-            url = uri("https://maven.plugily.xyz/releases")
-            credentials {
-                username = System.getenv("MAVEN_USERNAME")
-                password = System.getenv("MAVEN_PASSWORD")
-            }
-        }
-        maven {
-            name = "Snapshots"
-            url = uri("https://maven.plugily.xyz/snapshots")
-            credentials {
-                username = System.getenv("MAVEN_USERNAME")
-                password = System.getenv("MAVEN_PASSWORD")
-            }
-        }
-    }
-    publications {
-        create<MavenPublication>("mavenJava") {
-            from(components["java"])
-        }
-    }
 }
