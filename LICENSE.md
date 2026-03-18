@@ -1,6 +1,6 @@
 # License
 
-BuildBattle - Ultimate building competition minigame.
+BuildBattle-OG - Ultimate building competition minigame.
 Copyright (C) 2022 Plugily Projects - maintained by Tigerpanzer_02 and contributors
 
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.

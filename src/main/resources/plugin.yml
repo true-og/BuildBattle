@@ -1,4 +1,4 @@
-name: BuildBattle
+name: BuildBattle-OG
 main: plugily.projects.buildbattle.Main
 authors: [ PlugilyProjects, Tigerpanzer_02, Tigerpanzer, Plajer, TomTheDeveloper ]
 version: ${version}
@@ -7,11 +7,11 @@ api-version: ${apiVersion}
 
 commands:
   buildbattle:
-    description: BuildBattle Commands
+    description: BuildBattle-OG Commands
     usage: "§6Correct usage: /bb [option]"
     aliases: [ bb, buildb ]
   buildbattleadmin:
-    description: BuildBattle Admin Commands
+    description: BuildBattle-OG Admin Commands
     usage: "§6Correct usage: /bba [option]"
     aliases: [ bba, buildbadmin ]
 
