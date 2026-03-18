@@ -31,30 +31,41 @@ import plugily.projects.minigamesbox.classic.utils.version.xseries.XMaterial;
 
 /**
  * @author Plajer
- * <p>
- * Created at 23.12.2018
+ *         <p>
+ *         Created at 23.12.2018
  */
 public class ParticlesOption {
 
+    public ParticlesOption(OptionsRegistry registry) {
 
-  public ParticlesOption(OptionsRegistry registry) {
-    registry.registerOption(new MenuOption(12, "PARTICLES", new ItemBuilder(XMaterial.DANDELION.parseItem())
-        .name(new MessageBuilder("MENU_OPTION_CONTENT_PARTICLE_ITEM_NAME").asKey().build())
-        .lore(new MessageBuilder("MENU_OPTION_CONTENT_PARTICLE_ITEM_LORE").asKey().build())
-        .build(), new MessageBuilder("MENU_OPTION_CONTENT_PARTICLE_INVENTORY").asKey().build()) {
+        registry.registerOption(new MenuOption(12, "PARTICLES",
+                new ItemBuilder(XMaterial.DANDELION.parseItem())
+                        .name(new MessageBuilder("MENU_OPTION_CONTENT_PARTICLE_ITEM_NAME").asKey().build())
+                        .lore(new MessageBuilder("MENU_OPTION_CONTENT_PARTICLE_ITEM_LORE").asKey().build()).build(),
+                new MessageBuilder("MENU_OPTION_CONTENT_PARTICLE_INVENTORY").asKey().build())
+        {
 
-      @Override
-      public void onClick(InventoryClickEvent event) {
-        HumanEntity humanEntity = event.getWhoClicked();
+            @Override
+            public void onClick(InventoryClickEvent event) {
 
-        if(!(humanEntity instanceof Player) || !registry.getPlugin().getArenaRegistry().isInArena((Player) humanEntity)) {
-          return;
-        }
+                HumanEntity humanEntity = event.getWhoClicked();
 
-        humanEntity.closeInventory();
-        registry.getPlugin().getOptionsRegistry().getParticleRegistry().getParticles().open(((Player) humanEntity));
-      }
-    });
-  }
+                if (!(humanEntity instanceof Player)
+                        || !registry.getPlugin().getArenaRegistry().isInArena((Player) humanEntity))
+                {
+
+                    return;
+
+                }
+
+                humanEntity.closeInventory();
+                registry.getPlugin().getOptionsRegistry().getParticleRegistry().getParticles()
+                        .open(((Player) humanEntity));
+
+            }
+
+        });
+
+    }
 
 }

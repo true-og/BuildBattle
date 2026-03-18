@@ -24,42 +24,58 @@ import java.util.ArrayList;
 
 public class GuessTheme {
 
-  private final ArrayList<String> themes;
-  private final Difficulty difficulty;
+    private final ArrayList<String> themes;
+    private final Difficulty difficulty;
 
-  public GuessTheme(ArrayList<String> themes, Difficulty difficulty) {
-    this.themes = themes;
-    this.difficulty = difficulty;
-  }
+    public GuessTheme(ArrayList<String> themes, Difficulty difficulty) {
 
-  public ArrayList<String> getThemes() {
-    return themes;
-  }
+        this.themes = themes;
+        this.difficulty = difficulty;
 
-  public String getThemesAsString() {
-    return String.join(", ", themes);
-  }
-
-  public String getDefaultTheme() {
-    return themes.get(0);
-  }
-
-  public Difficulty getDifficulty() {
-    return difficulty;
-  }
-
-  public enum Difficulty {
-    EASY(1), MEDIUM(2), HARD(3);
-
-    private final int pointsReward;
-
-    Difficulty(int pointsReward) {
-      this.pointsReward = pointsReward;
     }
 
-    public int getPointsReward() {
-      return pointsReward;
+    public ArrayList<String> getThemes() {
+
+        return themes;
+
     }
-  }
+
+    public String getThemesAsString() {
+
+        return String.join(", ", themes);
+
+    }
+
+    public String getDefaultTheme() {
+
+        return themes.get(0);
+
+    }
+
+    public Difficulty getDifficulty() {
+
+        return difficulty;
+
+    }
+
+    public enum Difficulty {
+
+        EASY(1), MEDIUM(2), HARD(3);
+
+        private final int pointsReward;
+
+        Difficulty(int pointsReward) {
+
+            this.pointsReward = pointsReward;
+
+        }
+
+        public int getPointsReward() {
+
+            return pointsReward;
+
+        }
+
+    }
 
 }

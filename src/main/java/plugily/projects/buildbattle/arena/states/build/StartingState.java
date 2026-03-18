@@ -28,29 +28,40 @@ import plugily.projects.minigamesbox.classic.arena.states.PluginStartingState;
 
 /**
  * @author Plajer
- * <p>Created at 03.06.2019
+ *         <p>
+ *         Created at 03.06.2019
  */
 public class StartingState extends PluginStartingState {
 
-  @Override
-  public void handleCall(PluginArena arena) {
-    super.handleCall(arena);
-    BuildArena pluginArena = (BuildArena) getPlugin().getArenaRegistry().getArena(arena.getId());
-    if(pluginArena == null) {
-      return;
+    @Override
+    public void handleCall(PluginArena arena) {
+
+        super.handleCall(arena);
+        BuildArena pluginArena = (BuildArena) getPlugin().getArenaRegistry().getArena(arena.getId());
+        if (pluginArena == null) {
+
+            return;
+
+        }
+
+        if (arena.getTimer() == 0 || arena.isForceStart()) {
+
+            pluginArena.setParticleRefreshScheduler(new ParticleRefreshScheduler(getPlugin()));
+
+            if (!pluginArena.getPlotManager().isPlotsCleared()) {
+
+                pluginArena.getPlotManager().resetQueuedPlots();
+
+            }
+
+            pluginArena.distributePlots();
+            setArenaTimer(getPlugin().getConfig()
+                    .getInt("Time-Manager." + pluginArena.getArenaType().getPrefix() + ".Voting.Theme"));
+
+            pluginArena.setArenaInGameState(BaseArena.ArenaInGameState.THEME_VOTING);
+
+        }
+
     }
-    if(arena.getTimer() == 0 || arena.isForceStart()) {
 
-      pluginArena.setParticleRefreshScheduler(new ParticleRefreshScheduler(getPlugin()));
-
-      if(!pluginArena.getPlotManager().isPlotsCleared()) {
-        pluginArena.getPlotManager().resetQueuedPlots();
-      }
-
-      pluginArena.distributePlots();
-      setArenaTimer(getPlugin().getConfig().getInt("Time-Manager." + pluginArena.getArenaType().getPrefix() + ".Voting.Theme"));
-
-      pluginArena.setArenaInGameState(BaseArena.ArenaInGameState.THEME_VOTING);
-    }
-  }
 }

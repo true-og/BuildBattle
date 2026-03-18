@@ -32,27 +32,36 @@ import plugily.projects.minigamesbox.classic.utils.version.xseries.XMaterial;
 
 /**
  * @author Plajer
- * <p>
- * Created at 16.07.2019
+ *         <p>
+ *         Created at 16.07.2019
  */
 public class BannerCreatorOption {
 
-  public BannerCreatorOption(OptionsRegistry registry) {
-    registry.registerOption(new MenuOption(16, "BANNER_CREATOR", new ItemBuilder(XMaterial.WHITE_BANNER.parseItem())
-        .name(new MessageBuilder("MENU_OPTION_CONTENT_BANNER_ITEM_NAME").asKey().build())
-        .lore(new MessageBuilder("MENU_OPTION_CONTENT_BANNER_ITEM_LORE").asKey().build())
-        .build()) {
-      @Override
-      public void onClick(InventoryClickEvent event) {
-        HumanEntity humanEntity = event.getWhoClicked();
+    public BannerCreatorOption(OptionsRegistry registry) {
 
-        humanEntity.closeInventory();
+        registry.registerOption(new MenuOption(16, "BANNER_CREATOR",
+                new ItemBuilder(XMaterial.WHITE_BANNER.parseItem())
+                        .name(new MessageBuilder("MENU_OPTION_CONTENT_BANNER_ITEM_NAME").asKey().build())
+                        .lore(new MessageBuilder("MENU_OPTION_CONTENT_BANNER_ITEM_LORE").asKey().build()).build())
+        {
 
-        if (humanEntity instanceof Player) {
-          new BannerMenu((Player) humanEntity).openInventory(BannerMenu.PatternStage.BASE);
-        }
-      }
-    });
-  }
+            @Override
+            public void onClick(InventoryClickEvent event) {
+
+                HumanEntity humanEntity = event.getWhoClicked();
+
+                humanEntity.closeInventory();
+
+                if (humanEntity instanceof Player) {
+
+                    new BannerMenu((Player) humanEntity).openInventory(BannerMenu.PatternStage.BASE);
+
+                }
+
+            }
+
+        });
+
+    }
 
 }

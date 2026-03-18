@@ -44,116 +44,146 @@ import plugily.projects.minigamesbox.classic.handlers.setup.categories.PluginSet
 import plugily.projects.minigamesbox.classic.utils.services.metrics.Metrics;
 
 /**
- * Created by Tom on 17/08/2015.
- * Updated by Tigerpanzer_02 on 03.12.2021
+ * Created by Tom on 17/08/2015. Updated by Tigerpanzer_02 on 03.12.2021
  */
 public class Main extends PluginMain {
 
-  private VoteItems voteItems;
-  private HeadDatabaseManager headDatabaseManager;
-  private ThemeManager themeManager;
-  private BlacklistManager blacklistManager;
-  private OptionsRegistry optionsRegistry;
-  private ArenaRegistry arenaRegistry;
-  private ArenaManager arenaManager;
-  private ArgumentsRegistry argumentsRegistry;
-  private PlotMenuHandler plotMenuHandler;
+    private VoteItems voteItems;
+    private HeadDatabaseManager headDatabaseManager;
+    private ThemeManager themeManager;
+    private BlacklistManager blacklistManager;
+    private OptionsRegistry optionsRegistry;
+    private ArenaRegistry arenaRegistry;
+    private ArenaManager arenaManager;
+    private ArgumentsRegistry argumentsRegistry;
+    private PlotMenuHandler plotMenuHandler;
 
+    @TestOnly
+    public Main() {
 
-  @TestOnly
-  public Main() {
-    super();
-  }
+        super();
 
-  @Override
-  public void onEnable() {
-    long start = System.currentTimeMillis();
-    new LanguageMigrator(this);
-    MessageInitializer messageInitializer = new MessageInitializer(this);
-    super.onEnable();
-    getDebugger().debug("[System] [Plugin] Initialization start");
-    arenaRegistry = new ArenaRegistry(this);
-    new PlaceholderInitializer(this);
-    messageInitializer.registerMessages();
-    new AdditionalValueInitializer(this);
-    initializePluginClasses();
-    getDebugger().debug("Full {0} plugin enabled", getName());
-    getDebugger().debug("[System] [Plugin] Initialization finished took {0}ms", System.currentTimeMillis() - start);
-  }
+    }
 
-  public void initializePluginClasses() {
-    addFileName("themes");
-    addFileName("vote_items");
-    blacklistManager = new BlacklistManager(this);
-    headDatabaseManager = new HeadDatabaseManager(this);
-    themeManager = new ThemeManager(this);
-    BaseArena.init(this);
-    new ArenaEvents(this);
-    arenaManager = new ArenaManager(this);
-    arenaRegistry.registerArenas();
-    getSignManager().loadSigns();
-    getSignManager().updateSigns();
-    argumentsRegistry = new ArgumentsRegistry(this);
-    voteItems = new VoteItems(this);
-    new VoteEvents(this);
-    plotMenuHandler = new PlotMenuHandler(this);
-    optionsRegistry = new OptionsRegistry(this);
-    optionsRegistry.registerOptions();
-    addPluginMetrics();
-  }
+    @Override
+    public void onEnable() {
 
-  private void addPluginMetrics() {
-    getMetrics().addCustomChart(new Metrics.SimplePie("hooked_addons", () -> {
-      if(getServer().getPluginManager().getPlugin("BuildBattle-Extras") != null) {
-        return "Extras";
-      }
-      return "None";
-    }));
-  }
+        long start = System.currentTimeMillis();
+        new LanguageMigrator(this);
+        MessageInitializer messageInitializer = new MessageInitializer(this);
+        super.onEnable();
+        getDebugger().debug("[System] [Plugin] Initialization start");
+        arenaRegistry = new ArenaRegistry(this);
+        new PlaceholderInitializer(this);
+        messageInitializer.registerMessages();
+        new AdditionalValueInitializer(this);
+        initializePluginClasses();
+        getDebugger().debug("Full {0} plugin enabled", getName());
+        getDebugger().debug("[System] [Plugin] Initialization finished took {0}ms", System.currentTimeMillis() - start);
 
+    }
 
-  public VoteItems getVoteItems() {
-    return voteItems;
-  }
+    public void initializePluginClasses() {
 
-  public HeadDatabaseManager getHeadDatabaseManager() {
-    return headDatabaseManager;
-  }
+        addFileName("themes");
+        addFileName("vote_items");
+        blacklistManager = new BlacklistManager(this);
+        headDatabaseManager = new HeadDatabaseManager(this);
+        themeManager = new ThemeManager(this);
+        BaseArena.init(this);
+        new ArenaEvents(this);
+        arenaManager = new ArenaManager(this);
+        arenaRegistry.registerArenas();
+        getSignManager().loadSigns();
+        getSignManager().updateSigns();
+        argumentsRegistry = new ArgumentsRegistry(this);
+        voteItems = new VoteItems(this);
+        new VoteEvents(this);
+        plotMenuHandler = new PlotMenuHandler(this);
+        optionsRegistry = new OptionsRegistry(this);
+        optionsRegistry.registerOptions();
+        addPluginMetrics();
 
-  public ThemeManager getThemeManager() {
-    return themeManager;
-  }
+    }
 
-  public BlacklistManager getBlacklistManager() {
-    return blacklistManager;
-  }
+    private void addPluginMetrics() {
 
-  public OptionsRegistry getOptionsRegistry() {
-    return optionsRegistry;
-  }
+        getMetrics().addCustomChart(new Metrics.SimplePie("hooked_addons", () -> {
 
-  public PlotMenuHandler getPlotMenuHandler() {
-    return plotMenuHandler;
-  }
+            if (getServer().getPluginManager().getPlugin("BuildBattle-Extras") != null) {
 
+                return "Extras";
 
-  @Override
-  public ArenaRegistry getArenaRegistry() {
-    return arenaRegistry;
-  }
+            }
 
-  @Override
-  public ArenaManager getArenaManager() {
-    return arenaManager;
-  }
+            return "None";
 
-  @Override
-  public ArgumentsRegistry getArgumentsRegistry() {
-    return argumentsRegistry;
-  }
+        }));
 
-  @Override
-  public PluginSetupCategoryManager getSetupCategoryManager(SetupInventory setupInventory) {
-    return new SetupCategoryManager(setupInventory);
-  }
+    }
+
+    public VoteItems getVoteItems() {
+
+        return voteItems;
+
+    }
+
+    public HeadDatabaseManager getHeadDatabaseManager() {
+
+        return headDatabaseManager;
+
+    }
+
+    public ThemeManager getThemeManager() {
+
+        return themeManager;
+
+    }
+
+    public BlacklistManager getBlacklistManager() {
+
+        return blacklistManager;
+
+    }
+
+    public OptionsRegistry getOptionsRegistry() {
+
+        return optionsRegistry;
+
+    }
+
+    public PlotMenuHandler getPlotMenuHandler() {
+
+        return plotMenuHandler;
+
+    }
+
+    @Override
+    public ArenaRegistry getArenaRegistry() {
+
+        return arenaRegistry;
+
+    }
+
+    @Override
+    public ArenaManager getArenaManager() {
+
+        return arenaManager;
+
+    }
+
+    @Override
+    public ArgumentsRegistry getArgumentsRegistry() {
+
+        return argumentsRegistry;
+
+    }
+
+    @Override
+    public PluginSetupCategoryManager getSetupCategoryManager(SetupInventory setupInventory) {
+
+        return new SetupCategoryManager(setupInventory);
+
+    }
+
 }

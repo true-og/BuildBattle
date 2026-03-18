@@ -33,41 +33,52 @@ import plugily.projects.minigamesbox.classic.utils.helper.ItemBuilder;
 
 /**
  * @author Plajer
- * <p>
- * Created at 23.12.2018
+ *         <p>
+ *         Created at 23.12.2018
  */
 public class PlotResetOption {
 
-  public PlotResetOption(OptionsRegistry registry) {
-    //todo reset after confirmation
-    registry.registerOption(new MenuOption(34, "RESET", new ItemBuilder(Material.BARRIER)
-        .name(new MessageBuilder("MENU_OPTION_CONTENT_RESET_ITEM_NAME").asKey().build())
-        .lore(new MessageBuilder("MENU_OPTION_CONTENT_RESET_ITEM_LORE").asKey().build())
-        .build()) {
-      @Override
-      public void onClick(InventoryClickEvent e) {
-        HumanEntity humanEntity = e.getWhoClicked();
+    public PlotResetOption(OptionsRegistry registry) {
 
-        if (!(humanEntity instanceof Player))
-          return;
+        // todo reset after confirmation
+        registry.registerOption(new MenuOption(34, "RESET",
+                new ItemBuilder(Material.BARRIER)
+                        .name(new MessageBuilder("MENU_OPTION_CONTENT_RESET_ITEM_NAME").asKey().build())
+                        .lore(new MessageBuilder("MENU_OPTION_CONTENT_RESET_ITEM_LORE").asKey().build()).build())
+        {
 
-        Player player = (Player) humanEntity;
+            @Override
+            public void onClick(InventoryClickEvent e) {
 
-        player.closeInventory();
+                HumanEntity humanEntity = e.getWhoClicked();
 
-        BaseArena arena = registry.getPlugin().getArenaRegistry().getArena(player);
-        if(arena == null) {
-          return;
-        }
+                if (!(humanEntity instanceof Player))
+                    return;
 
-        Plot plot = arena.getPlotManager().getPlot(player);
+                Player player = (Player) humanEntity;
 
-        if (plot != null) {
-          plot.resetPlot();
-          new MessageBuilder("MENU_OPTION_CONTENT_RESET_CHAT").asKey().player(player).sendPlayer();
-        }
-      }
-    });
-  }
+                player.closeInventory();
+
+                BaseArena arena = registry.getPlugin().getArenaRegistry().getArena(player);
+                if (arena == null) {
+
+                    return;
+
+                }
+
+                Plot plot = arena.getPlotManager().getPlot(player);
+
+                if (plot != null) {
+
+                    plot.resetPlot();
+                    new MessageBuilder("MENU_OPTION_CONTENT_RESET_CHAT").asKey().player(player).sendPlayer();
+
+                }
+
+            }
+
+        });
+
+    }
 
 }

@@ -40,38 +40,52 @@ import java.util.Map.Entry;
  */
 public class ParticleRemoveMenu {
 
-  private static final Main plugin = JavaPlugin.getPlugin(Main.class);
+    private static final Main plugin = JavaPlugin.getPlugin(Main.class);
 
-  private ParticleRemoveMenu() {
-  }
+    private ParticleRemoveMenu() {
 
-  public static void openMenu(Player player, Plot buildPlot) {
-    NormalFastInv gui = new NormalFastInv(54, new MessageBuilder("MENU_OPTION_CONTENT_PARTICLE_INVENTORY").asKey().build());
-
-    for(Entry<Location, String> map : new HashMap<>(buildPlot.getParticles()).entrySet()) {
-      ParticleItem particleItem = plugin.getOptionsRegistry().getParticleRegistry().getItemByEffect(map.getValue());
-      if(particleItem == null) {
-        continue;
-      }
-
-      Location location = map.getKey();
-      ItemStack itemStack = new ItemBuilder(particleItem.getItemStack().clone()).removeLore().lore(new MessageBuilder("MENU_LOCATION").asKey().build(),
-          ChatColor.GRAY + "  x: " + Math.round(location.getX()),
-          ChatColor.GRAY + "  y: " + Math.round(location.getY()),
-          ChatColor.GRAY + "  z: " + Math.round(location.getZ())).build();
-      gui.addItem(new SimpleClickableItem(itemStack, event -> {
-        buildPlot.getParticles().remove(location);
-
-        new MessageBuilder("MENU_OPTION_CONTENT_PARTICLE_REMOVED").asKey().player((Player) event.getWhoClicked()).sendPlayer();
-        gui.refresh();
-        event.setCancelled(true);
-        event.getWhoClicked().closeInventory();
-        openMenu(player, buildPlot);
-      }));
     }
 
-    plugin.getOptionsRegistry().addGoBackItem(gui, 45);
-    gui.open(player);
-  }
+    public static void openMenu(Player player, Plot buildPlot) {
+
+        NormalFastInv gui = new NormalFastInv(54,
+                new MessageBuilder("MENU_OPTION_CONTENT_PARTICLE_INVENTORY").asKey().build());
+
+        for (Entry<Location, String> map : new HashMap<>(buildPlot.getParticles()).entrySet()) {
+
+            ParticleItem particleItem = plugin.getOptionsRegistry().getParticleRegistry()
+                    .getItemByEffect(map.getValue());
+            if (particleItem == null) {
+
+                continue;
+
+            }
+
+            Location location = map.getKey();
+            ItemStack itemStack = new ItemBuilder(particleItem.getItemStack().clone()).removeLore()
+                    .lore(new MessageBuilder("MENU_LOCATION").asKey().build(),
+                            ChatColor.GRAY + "  x: " + Math.round(location.getX()),
+                            ChatColor.GRAY + "  y: " + Math.round(location.getY()),
+                            ChatColor.GRAY + "  z: " + Math.round(location.getZ()))
+                    .build();
+            gui.addItem(new SimpleClickableItem(itemStack, event -> {
+
+                buildPlot.getParticles().remove(location);
+
+                new MessageBuilder("MENU_OPTION_CONTENT_PARTICLE_REMOVED").asKey()
+                        .player((Player) event.getWhoClicked()).sendPlayer();
+                gui.refresh();
+                event.setCancelled(true);
+                event.getWhoClicked().closeInventory();
+                openMenu(player, buildPlot);
+
+            }));
+
+        }
+
+        plugin.getOptionsRegistry().addGoBackItem(gui, 45);
+        gui.open(player);
+
+    }
 
 }

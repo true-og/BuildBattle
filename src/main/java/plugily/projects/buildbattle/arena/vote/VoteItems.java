@@ -41,159 +41,232 @@ import java.util.Set;
  */
 public class VoteItems {
 
-  private final Set<VoteItem> voteItems = new HashSet<>();
-  private final FileConfiguration config;
-  private final Main plugin;
+    private final Set<VoteItem> voteItems = new HashSet<>();
+    private final FileConfiguration config;
+    private final Main plugin;
 
-  private ItemStack reportItem = new ItemStack(Material.BEDROCK, 32);
-  private VoteItem reportVoteItem = new VoteItem(new ItemStack(Material.BEDROCK, 32), 8, 8 + 1, XSound.ENTITY_ARROW_HIT.parseSound());
+    private ItemStack reportItem = new ItemStack(Material.BEDROCK, 32);
+    private VoteItem reportVoteItem = new VoteItem(new ItemStack(Material.BEDROCK, 32), 8, 8 + 1,
+            XSound.ENTITY_ARROW_HIT.parseSound());
 
-  public VoteItems(Main plugin) {
-    this.plugin = plugin;
-    config = ConfigUtils.getConfig(plugin, "vote_items");
+    public VoteItems(Main plugin) {
 
-    updateVoteItemsConfig();
-    loadVoteItems();
-  }
+        this.plugin = plugin;
+        config = ConfigUtils.getConfig(plugin, "vote_items");
 
-  private void loadVoteItems() {
-    for(String key : config.getKeys(false)) {
-      String displayName = config.getString(key + ".displayname", null);
+        updateVoteItemsConfig();
+        loadVoteItems();
 
-      if(displayName == null) {
-        continue;
-      }
-
-      ItemStack stack = new ItemBuilder(XMaterial.matchXMaterial(config.getString(key + ".material-name", "BEDROCK")
-          .toUpperCase(java.util.Locale.ENGLISH)).orElse(XMaterial.BEDROCK).parseItem())
-          .name(new MessageBuilder(displayName).build())
-          .build();
-
-      Sound sound = XSound.matchXSound(config.getString(key + ".sound", "")).orElse(XSound.BLOCK_ANVIL_HIT).parseSound();
-
-      int slot;
-      try {
-        slot = Integer.parseInt(key);
-      } catch(NumberFormatException e) {
-        continue;
-      }
-
-      VoteItem voteItem = new VoteItem(stack, slot, slot + 1, sound);
-
-      if(config.getBoolean(key + ".report-item-function", false)) {
-        reportItem = stack;
-        reportVoteItem = voteItem;
-      }
-
-      voteItems.add(voteItem);
     }
-  }
 
-  private void updateVoteItemsConfig() {
-    for(String key : config.getKeys(false)) {
-      if(!config.isSet(key + ".displayname") || config.isSet(key + ".material-name")) {
-        continue;
-      }
-      config.set(key + ".material-name", XMaterial.GREEN_TERRACOTTA.name());
-      plugin.getDebugger().debug("Found outdated item in vote_items.yml! We've converted it to the newest version!");
-    }
-    ConfigUtils.saveConfig(plugin, config, "vote_items");
-  }
+    private void loadVoteItems() {
 
-  public void giveVoteItems(Player player) {
-    for(VoteItem voteItem : voteItems) {
-      player.getInventory().setItem(voteItem.slot, voteItem.itemStack);
-    }
-    player.updateInventory();
-  }
+        for (String key : config.getKeys(false)) {
 
-  public void playVoteSound(Player player, ItemStack itemStack) {
-    for(VoteItem item : voteItems) {
-      if(item.itemStack.isSimilar(itemStack)) {
-        if(item.sound == null) {
-          return;
+            String displayName = config.getString(key + ".displayname", null);
+
+            if (displayName == null) {
+
+                continue;
+
+            }
+
+            ItemStack stack = new ItemBuilder(XMaterial
+                    .matchXMaterial(
+                            config.getString(key + ".material-name", "BEDROCK").toUpperCase(java.util.Locale.ENGLISH))
+                    .orElse(XMaterial.BEDROCK).parseItem()).name(new MessageBuilder(displayName).build()).build();
+
+            Sound sound = XSound.matchXSound(config.getString(key + ".sound", "")).orElse(XSound.BLOCK_ANVIL_HIT)
+                    .parseSound();
+
+            int slot;
+            try {
+
+                slot = Integer.parseInt(key);
+
+            } catch (NumberFormatException e) {
+
+                continue;
+
+            }
+
+            VoteItem voteItem = new VoteItem(stack, slot, slot + 1, sound);
+
+            if (config.getBoolean(key + ".report-item-function", false)) {
+
+                reportItem = stack;
+                reportVoteItem = voteItem;
+
+            }
+
+            voteItems.add(voteItem);
+
         }
-        player.playSound(player.getLocation(), item.sound, 1, 1);
-      }
-    }
-  }
 
-  /**
-   * Get points value of target vote item stack
-   *
-   * @param itemStack item stack to get points value from
-   * @return points
-   */
-  public int getPoints(ItemStack itemStack) {
-    for(VoteItem item : voteItems) {
-      if(item.itemStack.isSimilar(itemStack)) {
-        return item.points;
-      }
-    }
-    return 1;
-  }
-
-  public int getPointsAndPlayVoteSound(Player player, VoteItem voteItem) {
-    if(voteItem.sound == null) {
-      return voteItem.points;
-    }
-    player.playSound(player.getLocation(), voteItem.sound, 1, 1);
-    return voteItem.points;
-  }
-
-  public VoteItem getVoteItem(ItemStack itemStack) {
-    for(VoteItem item : voteItems) {
-      if(item.itemStack.isSimilar(itemStack)) {
-        return item;
-      }
-    }
-    return null;
-  }
-
-  /**
-   * @return itemStack that represents report building function
-   */
-  public ItemStack getReportItem() {
-    return reportItem;
-  }
-
-  /**
-   * @return itemStack that represents report building function
-   */
-  public VoteItem getReportVoteItem() {
-    return reportVoteItem;
-  }
-
-  public static class VoteItem {
-
-    private final ItemStack itemStack;
-    private final int slot;
-    private final int points;
-    private final Sound sound;
-
-    public VoteItem(ItemStack itemStack, int slot, int points, Sound sound) {
-      this.itemStack = itemStack;
-      this.slot = slot;
-      this.points = points;
-      this.sound = sound;
     }
 
-    public ItemStack getItemStack() {
-      return itemStack;
+    private void updateVoteItemsConfig() {
+
+        for (String key : config.getKeys(false)) {
+
+            if (!config.isSet(key + ".displayname") || config.isSet(key + ".material-name")) {
+
+                continue;
+
+            }
+
+            config.set(key + ".material-name", XMaterial.GREEN_TERRACOTTA.name());
+            plugin.getDebugger()
+                    .debug("Found outdated item in vote_items.yml! We've converted it to the newest version!");
+
+        }
+
+        ConfigUtils.saveConfig(plugin, config, "vote_items");
+
     }
 
-    public int getSlot() {
-      return slot;
+    public void giveVoteItems(Player player) {
+
+        for (VoteItem voteItem : voteItems) {
+
+            player.getInventory().setItem(voteItem.slot, voteItem.itemStack);
+
+        }
+
+        player.updateInventory();
+
     }
 
-    public int getPoints() {
-      return points;
+    public void playVoteSound(Player player, ItemStack itemStack) {
+
+        for (VoteItem item : voteItems) {
+
+            if (item.itemStack.isSimilar(itemStack)) {
+
+                if (item.sound == null) {
+
+                    return;
+
+                }
+
+                player.playSound(player.getLocation(), item.sound, 1, 1);
+
+            }
+
+        }
+
     }
 
-    @Nullable
-    public Sound getSound() {
-      return sound;
+    /**
+     * Get points value of target vote item stack
+     *
+     * @param itemStack item stack to get points value from
+     * @return points
+     */
+    public int getPoints(ItemStack itemStack) {
+
+        for (VoteItem item : voteItems) {
+
+            if (item.itemStack.isSimilar(itemStack)) {
+
+                return item.points;
+
+            }
+
+        }
+
+        return 1;
+
     }
-  }
+
+    public int getPointsAndPlayVoteSound(Player player, VoteItem voteItem) {
+
+        if (voteItem.sound == null) {
+
+            return voteItem.points;
+
+        }
+
+        player.playSound(player.getLocation(), voteItem.sound, 1, 1);
+        return voteItem.points;
+
+    }
+
+    public VoteItem getVoteItem(ItemStack itemStack) {
+
+        for (VoteItem item : voteItems) {
+
+            if (item.itemStack.isSimilar(itemStack)) {
+
+                return item;
+
+            }
+
+        }
+
+        return null;
+
+    }
+
+    /**
+     * @return itemStack that represents report building function
+     */
+    public ItemStack getReportItem() {
+
+        return reportItem;
+
+    }
+
+    /**
+     * @return itemStack that represents report building function
+     */
+    public VoteItem getReportVoteItem() {
+
+        return reportVoteItem;
+
+    }
+
+    public static class VoteItem {
+
+        private final ItemStack itemStack;
+        private final int slot;
+        private final int points;
+        private final Sound sound;
+
+        public VoteItem(ItemStack itemStack, int slot, int points, Sound sound) {
+
+            this.itemStack = itemStack;
+            this.slot = slot;
+            this.points = points;
+            this.sound = sound;
+
+        }
+
+        public ItemStack getItemStack() {
+
+            return itemStack;
+
+        }
+
+        public int getSlot() {
+
+            return slot;
+
+        }
+
+        public int getPoints() {
+
+            return points;
+
+        }
+
+        @Nullable
+        public Sound getSound() {
+
+            return sound;
+
+        }
+
+    }
 
 }

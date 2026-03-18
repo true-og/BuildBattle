@@ -1,8 +1,5 @@
-/.idea/
-/out/
-*.iml
-/target/
-/minecraft/
-/docs/
-/.gradle/
-/build/
+.gradle/
+build/
+.classpath
+.project
+.settings/

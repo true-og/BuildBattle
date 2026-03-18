@@ -36,55 +36,88 @@ import plugily.projects.minigamesbox.inventory.normal.NormalFastInv;
 
 /**
  * @author Plajer
- * <p>
- * Created at 23.12.2018
+ *         <p>
+ *         Created at 23.12.2018
  */
 public class WeatherChangeOption {
 
-  public WeatherChangeOption(OptionsRegistry registry) {
-    //todo add stormy (lightnings) and winter (snowflakes) with ice biome
-    registry.registerOption(new MenuOption(28, "WEATHER", new ItemBuilder(Material.BUCKET)
-        .name(new MessageBuilder("MENU_OPTION_CONTENT_WEATHER_ITEM_NAME").asKey().build())
-        .lore(new MessageBuilder("MENU_OPTION_CONTENT_WEATHER_ITEM_LORE").asKey().build())
-        .build(), new MessageBuilder("MENU_OPTION_CONTENT_WEATHER_INVENTORY").asKey().build()) {
+    public WeatherChangeOption(OptionsRegistry registry) {
 
-      @Override
-      public void onClick(InventoryClickEvent event) {
-        HumanEntity humanEntity = event.getWhoClicked();
-        humanEntity.closeInventory();
-        if(!(humanEntity instanceof Player)) {
-          return;
-        }
-        Player player = (Player) humanEntity;
-        BaseArena arena = registry.getPlugin().getArenaRegistry().getArena(player);
+        // todo add stormy (lightnings) and winter (snowflakes) with ice biome
+        registry.registerOption(new MenuOption(28, "WEATHER",
+                new ItemBuilder(Material.BUCKET)
+                        .name(new MessageBuilder("MENU_OPTION_CONTENT_WEATHER_ITEM_NAME").asKey().build())
+                        .lore(new MessageBuilder("MENU_OPTION_CONTENT_WEATHER_ITEM_LORE").asKey().build()).build(),
+                new MessageBuilder("MENU_OPTION_CONTENT_WEATHER_INVENTORY").asKey().build())
+        {
 
-        if(arena == null) {
-          return;
-        }
+            @Override
+            public void onClick(InventoryClickEvent event) {
 
-        Plot plot = arena.getPlotManager().getPlot(player);
-        if(plot == null) {
-          return;
-        }
-        NormalFastInv gui = new NormalFastInv(9, new MessageBuilder("MENU_OPTION_CONTENT_WEATHER_INVENTORY").asKey().build());
-        for(WeatherType weatherType : WeatherType.values()) {
-          Material material = Material.BUCKET;
-          if (weatherType == WeatherType.DOWNFALL) {
-            material = Material.WATER_BUCKET;
-          }
-          gui.addItem(new SimpleClickableItem(new ItemBuilder(material).name(new MessageBuilder("MENU_OPTION_CONTENT_WEATHER_TYPE_" + weatherType.name()).asKey().build()).build(), clickEvent -> {
-            plot.setWeatherType(weatherType);
+                HumanEntity humanEntity = event.getWhoClicked();
+                humanEntity.closeInventory();
+                if (!(humanEntity instanceof Player)) {
 
-            for(Player p : plot.getMembers()) {
-              p.setPlayerWeather(plot.getWeatherType());
-              new MessageBuilder("MENU_OPTION_CONTENT_WEATHER_CHANGED").asKey().value(new MessageBuilder("MENU_OPTION_CONTENT_WEATHER_TYPE_" + weatherType.name()).asKey().build()).player(p).sendPlayer();
+                    return;
+
+                }
+
+                Player player = (Player) humanEntity;
+                BaseArena arena = registry.getPlugin().getArenaRegistry().getArena(player);
+
+                if (arena == null) {
+
+                    return;
+
+                }
+
+                Plot plot = arena.getPlotManager().getPlot(player);
+                if (plot == null) {
+
+                    return;
+
+                }
+
+                NormalFastInv gui = new NormalFastInv(9,
+                        new MessageBuilder("MENU_OPTION_CONTENT_WEATHER_INVENTORY").asKey().build());
+                for (WeatherType weatherType : WeatherType.values()) {
+
+                    Material material = Material.BUCKET;
+                    if (weatherType == WeatherType.DOWNFALL) {
+
+                        material = Material.WATER_BUCKET;
+
+                    }
+
+                    gui.addItem(new SimpleClickableItem(new ItemBuilder(material)
+                            .name(new MessageBuilder("MENU_OPTION_CONTENT_WEATHER_TYPE_" + weatherType.name()).asKey()
+                                    .build())
+                            .build(), clickEvent ->
+                    {
+
+                                plot.setWeatherType(weatherType);
+
+                                for (Player p : plot.getMembers()) {
+
+                                    p.setPlayerWeather(plot.getWeatherType());
+                                    new MessageBuilder("MENU_OPTION_CONTENT_WEATHER_CHANGED").asKey().value(
+                                            new MessageBuilder("MENU_OPTION_CONTENT_WEATHER_TYPE_" + weatherType.name())
+                                                    .asKey().build())
+                                            .player(p).sendPlayer();
+
+                                }
+
+                            }));
+
+                }
+
+                registry.getPlugin().getOptionsRegistry().addGoBackItem(gui, 8);
+                gui.open(player);
+
             }
-          }));
-        }
-        registry.getPlugin().getOptionsRegistry().addGoBackItem(gui, 8);
-        gui.open(player);
-      }
-    });
-  }
+
+        });
+
+    }
 
 }

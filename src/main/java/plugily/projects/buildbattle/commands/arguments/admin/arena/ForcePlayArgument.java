@@ -36,69 +36,113 @@ import java.util.StringJoiner;
 
 /**
  * @author Plajer
- * <p>
- * Created at 11.01.2019
+ *         <p>
+ *         Created at 11.01.2019
  */
 public class ForcePlayArgument {
 
-  public ForcePlayArgument(ArgumentsRegistry registry) {
-    registry.mapArgument("buildbattleadmin", new LabeledCommandArgument("forceplay", "buildbattle.admin.forceplay", CommandArgument.ExecutorType.BOTH,
-        new LabelData("/bba forceplay <arena> <theme>", "/bba forceplay <arena> <theme>",
-            "&7Start a arena by command \n&6Permission: &7buildbattle.admin.forceplay\n&cNOT FOR PRODUCTION!")) {
-      @Override
-      public void execute(CommandSender sender, String[] args) {
-        if(args.length == 1) {
-          new MessageBuilder("&cPlease type arena theme!").prefix().send(sender);
-          return;
-        }
-        BaseArena arena;
-        int themeArgStart = 1;
-        if(!(sender instanceof Player)) {
-          arena = (BaseArena) registry.getPlugin().getArenaRegistry().getArena(args[1]);
-          if(args.length == 2 && arena != null) {
-            BaseArena finalArena = arena;
-            Bukkit.getOnlinePlayers().forEach(player -> {
-              registry.getPlugin().getArenaManager().joinAttempt(player, finalArena);
-            });
-            arena.setForceStart(true);
-            return;
-          }
-          themeArgStart = 2;
-        } else {
-          arena = (BaseArena) registry.getPlugin().getArenaRegistry().getArena((Player) sender);
-          if(arena == null) {
-            arena = (BaseArena) registry.getPlugin().getArenaRegistry().getArena(args[1]);
-          }
-        }
-        if(arena == null) {
-          new MessageBuilder("COMMANDS_NOT_PLAYING").asKey().send(sender);
-          return;
-        }
-        if(!(arena instanceof BuildArena)) {
-          new MessageBuilder("&cCan't set theme on this arena type!").prefix().send(sender);
-          return;
-        }
-        StringJoiner themeName = new StringJoiner(" ");
+    public ForcePlayArgument(ArgumentsRegistry registry) {
 
-        for(int i = themeArgStart; i < args.length; i++)
-          themeName.add(args[i]);
-        if(arena.getArenaInGameState() == BaseArena.ArenaInGameState.BUILD_TIME || arena.getArenaState() == IArenaState.WAITING_FOR_PLAYERS || arena.getArenaState() == IArenaState.STARTING || arena.getArenaState() == IArenaState.FULL_GAME || arena.getArenaInGameState() == BaseArena.ArenaInGameState.THEME_VOTING) {
-          if(arena.getPlugin().getThemeManager().isThemeBlacklisted(themeName.toString())) {
-            new MessageBuilder("COMMANDS_THEME_BLACKLISTED").asKey().prefix().send(sender);
-            return;
-          }
-          BaseArena finalArena1 = arena;
-          Bukkit.getOnlinePlayers().forEach(player -> {
-            registry.getPlugin().getArenaManager().joinAttempt(player, finalArena1);
-          });
-          arena.setForceStart(true);
-          arena.setTheme(themeName.toString());
-          new MessageBuilder("IN_GAME_MESSAGES_ADMIN_CHANGED_THEME").asKey().prefix().value(themeName.toString()).arena(arena).sendArena();
-        } else {
-          new MessageBuilder("&cWrong state to force theme!").prefix().send(sender);
-        }
-      }
-    });
-  }
+        registry.mapArgument("buildbattleadmin", new LabeledCommandArgument("forceplay", "buildbattle.admin.forceplay",
+                CommandArgument.ExecutorType.BOTH,
+                new LabelData("/bba forceplay <arena> <theme>", "/bba forceplay <arena> <theme>",
+                        "&7Start a arena by command \n&6Permission: &7buildbattle.admin.forceplay\n&cNOT FOR PRODUCTION!"))
+        {
+
+            @Override
+            public void execute(CommandSender sender, String[] args) {
+
+                if (args.length == 1) {
+
+                    new MessageBuilder("&cPlease type arena theme!").prefix().send(sender);
+                    return;
+
+                }
+
+                BaseArena arena;
+                int themeArgStart = 1;
+                if (!(sender instanceof Player)) {
+
+                    arena = (BaseArena) registry.getPlugin().getArenaRegistry().getArena(args[1]);
+                    if (args.length == 2 && arena != null) {
+
+                        BaseArena finalArena = arena;
+                        Bukkit.getOnlinePlayers().forEach(player -> {
+
+                            registry.getPlugin().getArenaManager().joinAttempt(player, finalArena);
+
+                        });
+                        arena.setForceStart(true);
+                        return;
+
+                    }
+
+                    themeArgStart = 2;
+
+                } else {
+
+                    arena = (BaseArena) registry.getPlugin().getArenaRegistry().getArena((Player) sender);
+                    if (arena == null) {
+
+                        arena = (BaseArena) registry.getPlugin().getArenaRegistry().getArena(args[1]);
+
+                    }
+
+                }
+
+                if (arena == null) {
+
+                    new MessageBuilder("COMMANDS_NOT_PLAYING").asKey().send(sender);
+                    return;
+
+                }
+
+                if (!(arena instanceof BuildArena)) {
+
+                    new MessageBuilder("&cCan't set theme on this arena type!").prefix().send(sender);
+                    return;
+
+                }
+
+                StringJoiner themeName = new StringJoiner(" ");
+
+                for (int i = themeArgStart; i < args.length; i++)
+                    themeName.add(args[i]);
+                if (arena.getArenaInGameState() == BaseArena.ArenaInGameState.BUILD_TIME
+                        || arena.getArenaState() == IArenaState.WAITING_FOR_PLAYERS
+                        || arena.getArenaState() == IArenaState.STARTING
+                        || arena.getArenaState() == IArenaState.FULL_GAME
+                        || arena.getArenaInGameState() == BaseArena.ArenaInGameState.THEME_VOTING)
+                {
+
+                    if (arena.getPlugin().getThemeManager().isThemeBlacklisted(themeName.toString())) {
+
+                        new MessageBuilder("COMMANDS_THEME_BLACKLISTED").asKey().prefix().send(sender);
+                        return;
+
+                    }
+
+                    BaseArena finalArena1 = arena;
+                    Bukkit.getOnlinePlayers().forEach(player -> {
+
+                        registry.getPlugin().getArenaManager().joinAttempt(player, finalArena1);
+
+                    });
+                    arena.setForceStart(true);
+                    arena.setTheme(themeName.toString());
+                    new MessageBuilder("IN_GAME_MESSAGES_ADMIN_CHANGED_THEME").asKey().prefix()
+                            .value(themeName.toString()).arena(arena).sendArena();
+
+                } else {
+
+                    new MessageBuilder("&cWrong state to force theme!").prefix().send(sender);
+
+                }
+
+            }
+
+        });
+
+    }
 
 }

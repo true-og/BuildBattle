@@ -30,68 +30,100 @@ import java.lang.reflect.Method;
 
 /**
  * @author Tigerpanzer_02
- * <p>
- * Created at 19.06.2022
+ *         <p>
+ *         Created at 19.06.2022
  */
 public class ChunkManager {
 
-  private static Class<?> packetPlayOutMapChunk, chunkClass;
-  private static Constructor<?> mapChunkConstructor;
+    private static Class<?> packetPlayOutMapChunk, chunkClass;
+    private static Constructor<?> mapChunkConstructor;
 
-  static {
-    if (ServerVersion.Version.isCurrentLower(ServerVersion.Version.v1_18)) {
-      packetPlayOutMapChunk = PacketUtils.classByName("net.minecraft.network.protocol.game", "PacketPlayOutMapChunk");
-      chunkClass = PacketUtils.classByName("net.minecraft.world.level.chunk", "Chunk");
+    static {
 
-      if (ServerVersion.Version.isCurrentEqualOrHigher(ServerVersion.Version.v1_17)) {
-        try {
-          mapChunkConstructor = packetPlayOutMapChunk.getConstructor(PacketUtils.classByName("net.minecraft.world.level.chunk", "LevelChunk"));
-        } catch (NoSuchMethodException e) {
-          try {
-            mapChunkConstructor = packetPlayOutMapChunk.getConstructor(chunkClass);
-          } catch (NoSuchMethodException ex) {
-            throw new RuntimeException(ex);
-          }
+        if (ServerVersion.Version.isCurrentLower(ServerVersion.Version.v1_18)) {
+
+            packetPlayOutMapChunk = PacketUtils.classByName("net.minecraft.network.protocol.game",
+                    "PacketPlayOutMapChunk");
+            chunkClass = PacketUtils.classByName("net.minecraft.world.level.chunk", "Chunk");
+
+            if (ServerVersion.Version.isCurrentEqualOrHigher(ServerVersion.Version.v1_17)) {
+
+                try {
+
+                    mapChunkConstructor = packetPlayOutMapChunk
+                            .getConstructor(PacketUtils.classByName("net.minecraft.world.level.chunk", "LevelChunk"));
+
+                } catch (NoSuchMethodException e) {
+
+                    try {
+
+                        mapChunkConstructor = packetPlayOutMapChunk.getConstructor(chunkClass);
+
+                    } catch (NoSuchMethodException ex) {
+
+                        throw new RuntimeException(ex);
+
+                    }
+
+                }
+
+            }
+
         }
-      }
-    }
-  }
 
-  public static void sendMapChunk(Player player, Chunk chunk) {
-    if (ServerVersion.Version.isCurrentEqualOrHigher(ServerVersion.Version.v1_18)) {
-      return; // Should just use World#refreshChunk instead
     }
 
-    try {
-      Method chunkHandleMethod = chunk.getClass().getMethod("getHandle");
-      if (ServerVersion.Version.isCurrentEqualOrHigher(ServerVersion.Version.v1_17)) {
-        PacketUtils.sendPacket(player, mapChunkConstructor.newInstance(chunkHandleMethod.invoke(chunk)));
-        return;
-      }
+    public static void sendMapChunk(Player player, Chunk chunk) {
 
-      if (ServerVersion.Version.isCurrentEqualOrHigher(ServerVersion.Version.v1_16)) {
-        if (mapChunkConstructor == null)
-          mapChunkConstructor = packetPlayOutMapChunk.getConstructor(chunkClass, int.class, boolean.class);
+        if (ServerVersion.Version.isCurrentEqualOrHigher(ServerVersion.Version.v1_18)) {
 
-        PacketUtils.sendPacket(player, mapChunkConstructor.newInstance(chunkHandleMethod.invoke(chunk), 65535, false));
-        return;
-      }
+            return; // Should just use World#refreshChunk instead
 
-      if (ServerVersion.Version.isCurrentEqualOrLower(ServerVersion.Version.v1_10)) {
-        if (mapChunkConstructor == null)
-          mapChunkConstructor = packetPlayOutMapChunk.getConstructor(chunkClass, boolean.class, int.class);
+        }
 
-        PacketUtils.sendPacket(player, mapChunkConstructor.newInstance(chunkHandleMethod.invoke(chunk), true, 65535));
-        return;
-      }
+        try {
 
-      if (mapChunkConstructor == null)
-        mapChunkConstructor = packetPlayOutMapChunk.getConstructor(chunkClass, int.class);
+            Method chunkHandleMethod = chunk.getClass().getMethod("getHandle");
+            if (ServerVersion.Version.isCurrentEqualOrHigher(ServerVersion.Version.v1_17)) {
 
-      PacketUtils.sendPacket(player, mapChunkConstructor.newInstance(chunkHandleMethod.invoke(chunk), 65535));
-    } catch (ReflectiveOperationException exception) {
-      throw new RuntimeException(exception);
+                PacketUtils.sendPacket(player, mapChunkConstructor.newInstance(chunkHandleMethod.invoke(chunk)));
+                return;
+
+            }
+
+            if (ServerVersion.Version.isCurrentEqualOrHigher(ServerVersion.Version.v1_16)) {
+
+                if (mapChunkConstructor == null)
+                    mapChunkConstructor = packetPlayOutMapChunk.getConstructor(chunkClass, int.class, boolean.class);
+
+                PacketUtils.sendPacket(player,
+                        mapChunkConstructor.newInstance(chunkHandleMethod.invoke(chunk), 65535, false));
+                return;
+
+            }
+
+            if (ServerVersion.Version.isCurrentEqualOrLower(ServerVersion.Version.v1_10)) {
+
+                if (mapChunkConstructor == null)
+                    mapChunkConstructor = packetPlayOutMapChunk.getConstructor(chunkClass, boolean.class, int.class);
+
+                PacketUtils.sendPacket(player,
+                        mapChunkConstructor.newInstance(chunkHandleMethod.invoke(chunk), true, 65535));
+                return;
+
+            }
+
+            if (mapChunkConstructor == null)
+                mapChunkConstructor = packetPlayOutMapChunk.getConstructor(chunkClass, int.class);
+
+            PacketUtils.sendPacket(player, mapChunkConstructor.newInstance(chunkHandleMethod.invoke(chunk), 65535));
+
+        } catch (ReflectiveOperationException exception) {
+
+            throw new RuntimeException(exception);
+
+        }
+
     }
-  }
 
 }

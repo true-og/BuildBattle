@@ -28,30 +28,38 @@ import plugily.projects.minigamesbox.api.events.PlugilyEvent;
 /**
  * @author Plajer
  * @since 4.0.0-pre-12
- * <p>
- * Called when plot is being reset
+ *        <p>
+ *        Called when plot is being reset
  */
 public class PlotResetEvent extends PlugilyEvent {
 
-  private static final HandlerList HANDLERS = new HandlerList();
-  private final Plot plot;
+    private static final HandlerList HANDLERS = new HandlerList();
+    private final Plot plot;
 
-  public PlotResetEvent(BaseArena eventArena, Plot plot) {
-    super(eventArena);
-    this.plot = plot;
-  }
+    public PlotResetEvent(BaseArena eventArena, Plot plot) {
 
-  public static HandlerList getHandlerList() {
-    return HANDLERS;
-  }
+        super(eventArena);
+        this.plot = plot;
 
-  @Override
-  public HandlerList getHandlers() {
-    return HANDLERS;
-  }
+    }
 
-  public Plot getPlot() {
-    return plot;
-  }
+    public static HandlerList getHandlerList() {
+
+        return HANDLERS;
+
+    }
+
+    @Override
+    public HandlerList getHandlers() {
+
+        return HANDLERS;
+
+    }
+
+    public Plot getPlot() {
+
+        return plot;
+
+    }
 
 }

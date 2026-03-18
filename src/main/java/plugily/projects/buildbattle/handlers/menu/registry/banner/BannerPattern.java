@@ -25,24 +25,31 @@ import org.bukkit.block.banner.PatternType;
 
 /**
  * @author Plajer
- * <p>
- * Created at 16.07.2019
+ *         <p>
+ *         Created at 16.07.2019
  */
 public class BannerPattern {
 
-  private final DyeColor dyeColor;
-  private final PatternType patternType;
+    private final DyeColor dyeColor;
+    private final PatternType patternType;
 
-  public BannerPattern(DyeColor dyeColor, PatternType patternType) {
-    this.dyeColor = dyeColor;
-    this.patternType = patternType;
-  }
+    public BannerPattern(DyeColor dyeColor, PatternType patternType) {
 
-  public DyeColor getDyeColor() {
-    return dyeColor;
-  }
+        this.dyeColor = dyeColor;
+        this.patternType = patternType;
 
-  public PatternType getPatternType() {
-    return patternType;
-  }
+    }
+
+    public DyeColor getDyeColor() {
+
+        return dyeColor;
+
+    }
+
+    public PatternType getPatternType() {
+
+        return patternType;
+
+    }
+
 }

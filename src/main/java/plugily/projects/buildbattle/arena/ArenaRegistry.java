@@ -47,139 +47,203 @@ import java.util.Locale;
  */
 public class ArenaRegistry extends PluginArenaRegistry {
 
-  private final Main plugin;
+    private final Main plugin;
 
-  public ArenaRegistry(Main plugin) {
-    super(plugin);
-    this.plugin = plugin;
-  }
+    public ArenaRegistry(Main plugin) {
 
+        super(plugin);
+        this.plugin = plugin;
 
-  @Override
-  public PluginArena getNewArena(String id) {
-    switch(ConfigUtils.getConfig(plugin, "arenas").getString("instances." + id + ".gametype", "classic").toLowerCase(Locale.ENGLISH)) {
-      case "gtb":
-      case "guessthebuild":
-      case "guess_the_build":
-        return new GuessArena(id);
-      case "classic":
-      case "solo":
-      case "team":
-      default:
-        return new BuildArena(id);
-    }
-  }
-
-  @Override
-  public boolean additionalValidatorChecks(ConfigurationSection section, PluginArena arena, String id) {
-    if(!super.additionalValidatorChecks(section, arena, id)) return false;
-
-    boolean isBuildArena = arena instanceof BuildArena;
-    boolean isGuessArena = arena instanceof GuessArena;
-
-    if(isBuildArena) {
-      int plotMemberSize = section.getInt(id + ".plotmembersize", 0);
-
-      // Member size can not be less than 1
-      if(plotMemberSize < 1) {
-        plugin.getDebugger().sendConsoleMsg(new MessageBuilder("VALIDATOR_INVALID_ARENA_CONFIGURATION").asKey().value("INVALID PLOT MEMBER SIZE!").arena(arena).build());
-        return false;
-      }
-
-      arena.setArenaOption("PLOT_MEMBER_SIZE", plotMemberSize);
-      int minPlayers = arena.getArenaOption("MINIMUM_PLAYERS");
-      if(minPlayers <= plotMemberSize) {
-        arena.setArenaOption("MINIMUM_PLAYERS", plotMemberSize + 1);
-        plugin.getDebugger().sendConsoleMsg(new MessageBuilder("VALIDATOR_INVALID_ARENA_CONFIGURATION").asKey().value("MIN PLAYERS NEEDS TO BE 1 MORE THAN PLOT_MEMBER_SIZE, AUTOMATICALLY ADJUSTED. CONFIRM BY CHECKING ARENA SETUP!").arena(arena).build());
-      }
-
-      ((BuildArena) arena).setTypeByPlotMembers();
-    } else {
-      //todo gtb team mode, because why not!
-      arena.setArenaOption("PLOT_MEMBER_SIZE", 1);
     }
 
-    ConfigurationSection plotSection = section.getConfigurationSection(id + ".plots");
-    if(plotSection == null) {
-      plugin.getDebugger().sendConsoleMsg(new MessageBuilder("VALIDATOR_INVALID_ARENA_CONFIGURATION").asKey().value("PLOTS SETUP MISSING!").arena(arena).build());
-      return false;
-    }
+    @Override
+    public PluginArena getNewArena(String id) {
 
-    BaseArena baseArena = (BaseArena) arena;
+        switch (ConfigUtils.getConfig(plugin, "arenas").getString("instances." + id + ".gametype", "classic")
+                .toLowerCase(Locale.ENGLISH))
+        {
 
-    for(String plotName : plotSection.getKeys(false)) {
-      String minPointString = plotSection.getString(plotName + ".1", null);
-      String maxPointString = plotSection.getString(plotName + ".2", null);
+            case "gtb":
+            case "guessthebuild":
+            case "guess_the_build":
+                return new GuessArena(id);
+            case "classic":
+            case "solo":
+            case "team":
+            default:
+                return new BuildArena(id);
 
-      if(minPointString != null && maxPointString != null) {
-        Location minPoint = LocationSerializer.getLocation(minPointString);
-        Location maxPoint = LocationSerializer.getLocation(maxPointString);
-
-        if(minPoint != null && maxPoint != null) {
-          World minWorld = minPoint.getWorld();
-
-          if(minWorld != null) {
-            Biome biome = ServerVersion.Version.isCurrentHigher(ServerVersion.Version.v1_15) ?
-                minWorld.getBiome(minPoint.getBlockX(), minPoint.getBlockY(), minPoint.getBlockZ())
-                : minWorld.getBiome(minPoint.getBlockX(), minPoint.getBlockZ());
-
-            Plot buildPlot = new Plot(baseArena, biome);
-
-            buildPlot.setCuboid(new Cuboid(minPoint, maxPoint));
-            buildPlot.fullyResetPlot();
-
-            if(isGuessArena) {
-              int plotMemberSize = arena.getArenaOption("PLOT_MEMBER_SIZE");
-              int maxPlayers = arena.getMaximumPlayers();
-              int plotAmount = maxPlayers / plotMemberSize;
-              for(int i = 0; i < plotAmount; i++) {
-                Plot copyBuildPlot = new Plot(baseArena, biome);
-                copyBuildPlot.setCuboid(new Cuboid(minPoint, maxPoint));
-                copyBuildPlot.fullyResetPlot();
-                baseArena.getPlotManager().addBuildPlot(copyBuildPlot);
-              }
-              break;
-            } else {
-              baseArena.getPlotManager().addBuildPlot(buildPlot);
-            }
-          }
         }
-      } else {
-        plugin.getDebugger().sendConsoleMsg(new MessageBuilder("VALIDATOR_INVALID_ARENA_CONFIGURATION").asKey().value("PLOT NOT CONFIGURED!").arena(arena).build());
-        return false;
-      }
-    }
-    if(isBuildArena) {
-      ((BuildArena) arena).initPoll();
-    }
-    return true;
-  }
 
-  @Override
-  public @Nullable BaseArena getArena(Player player) {
-    IPluginArena pluginArena = super.getArena(player);
-    if(pluginArena instanceof BaseArena) {
-      return (BaseArena) pluginArena;
     }
-    return null;
-  }
 
-  @Override
-  public @Nullable BaseArena getArena(String id) {
-    IPluginArena pluginArena = super.getArena(id);
-    if(pluginArena instanceof BaseArena) {
-      return (BaseArena) pluginArena;
-    }
-    return null;
-  }
+    @Override
+    public boolean additionalValidatorChecks(ConfigurationSection section, PluginArena arena, String id) {
 
-  public @NotNull List<BaseArena> getPluginArenas() {
-    List<BaseArena> baseArenas = new ArrayList<>(super.getArenas().size());
-    for(IPluginArena pluginArena : super.getArenas()) {
-      if(pluginArena instanceof BaseArena) {
-        baseArenas.add((BaseArena) pluginArena);
-      }
+        if (!super.additionalValidatorChecks(section, arena, id))
+            return false;
+
+        boolean isBuildArena = arena instanceof BuildArena;
+        boolean isGuessArena = arena instanceof GuessArena;
+
+        if (isBuildArena) {
+
+            int plotMemberSize = section.getInt(id + ".plotmembersize", 0);
+
+            // Member size can not be less than 1
+            if (plotMemberSize < 1) {
+
+                plugin.getDebugger().sendConsoleMsg(new MessageBuilder("VALIDATOR_INVALID_ARENA_CONFIGURATION").asKey()
+                        .value("INVALID PLOT MEMBER SIZE!").arena(arena).build());
+                return false;
+
+            }
+
+            arena.setArenaOption("PLOT_MEMBER_SIZE", plotMemberSize);
+            int minPlayers = arena.getArenaOption("MINIMUM_PLAYERS");
+            if (minPlayers <= plotMemberSize) {
+
+                arena.setArenaOption("MINIMUM_PLAYERS", plotMemberSize + 1);
+                plugin.getDebugger().sendConsoleMsg(new MessageBuilder("VALIDATOR_INVALID_ARENA_CONFIGURATION").asKey()
+                        .value("MIN PLAYERS NEEDS TO BE 1 MORE THAN PLOT_MEMBER_SIZE, AUTOMATICALLY ADJUSTED. CONFIRM BY CHECKING ARENA SETUP!")
+                        .arena(arena).build());
+
+            }
+
+            ((BuildArena) arena).setTypeByPlotMembers();
+
+        } else {
+
+            // todo gtb team mode, because why not!
+            arena.setArenaOption("PLOT_MEMBER_SIZE", 1);
+
+        }
+
+        ConfigurationSection plotSection = section.getConfigurationSection(id + ".plots");
+        if (plotSection == null) {
+
+            plugin.getDebugger().sendConsoleMsg(new MessageBuilder("VALIDATOR_INVALID_ARENA_CONFIGURATION").asKey()
+                    .value("PLOTS SETUP MISSING!").arena(arena).build());
+            return false;
+
+        }
+
+        BaseArena baseArena = (BaseArena) arena;
+
+        for (String plotName : plotSection.getKeys(false)) {
+
+            String minPointString = plotSection.getString(plotName + ".1", null);
+            String maxPointString = plotSection.getString(plotName + ".2", null);
+
+            if (minPointString != null && maxPointString != null) {
+
+                Location minPoint = LocationSerializer.getLocation(minPointString);
+                Location maxPoint = LocationSerializer.getLocation(maxPointString);
+
+                if (minPoint != null && maxPoint != null) {
+
+                    World minWorld = minPoint.getWorld();
+
+                    if (minWorld != null) {
+
+                        Biome biome = ServerVersion.Version.isCurrentHigher(ServerVersion.Version.v1_15)
+                                ? minWorld.getBiome(minPoint.getBlockX(), minPoint.getBlockY(), minPoint.getBlockZ())
+                                : minWorld.getBiome(minPoint.getBlockX(), minPoint.getBlockZ());
+
+                        Plot buildPlot = new Plot(baseArena, biome);
+
+                        buildPlot.setCuboid(new Cuboid(minPoint, maxPoint));
+                        buildPlot.fullyResetPlot();
+
+                        if (isGuessArena) {
+
+                            int plotMemberSize = arena.getArenaOption("PLOT_MEMBER_SIZE");
+                            int maxPlayers = arena.getMaximumPlayers();
+                            int plotAmount = maxPlayers / plotMemberSize;
+                            for (int i = 0; i < plotAmount; i++) {
+
+                                Plot copyBuildPlot = new Plot(baseArena, biome);
+                                copyBuildPlot.setCuboid(new Cuboid(minPoint, maxPoint));
+                                copyBuildPlot.fullyResetPlot();
+                                baseArena.getPlotManager().addBuildPlot(copyBuildPlot);
+
+                            }
+
+                            break;
+
+                        } else {
+
+                            baseArena.getPlotManager().addBuildPlot(buildPlot);
+
+                        }
+
+                    }
+
+                }
+
+            } else {
+
+                plugin.getDebugger().sendConsoleMsg(new MessageBuilder("VALIDATOR_INVALID_ARENA_CONFIGURATION").asKey()
+                        .value("PLOT NOT CONFIGURED!").arena(arena).build());
+                return false;
+
+            }
+
+        }
+
+        if (isBuildArena) {
+
+            ((BuildArena) arena).initPoll();
+
+        }
+
+        return true;
+
     }
-    return baseArenas;
-  }
+
+    @Override
+    public @Nullable BaseArena getArena(Player player) {
+
+        IPluginArena pluginArena = super.getArena(player);
+        if (pluginArena instanceof BaseArena) {
+
+            return (BaseArena) pluginArena;
+
+        }
+
+        return null;
+
+    }
+
+    @Override
+    public @Nullable BaseArena getArena(String id) {
+
+        IPluginArena pluginArena = super.getArena(id);
+        if (pluginArena instanceof BaseArena) {
+
+            return (BaseArena) pluginArena;
+
+        }
+
+        return null;
+
+    }
+
+    public @NotNull List<BaseArena> getPluginArenas() {
+
+        List<BaseArena> baseArenas = new ArrayList<>(super.getArenas().size());
+        for (IPluginArena pluginArena : super.getArenas()) {
+
+            if (pluginArena instanceof BaseArena) {
+
+                baseArenas.add((BaseArena) pluginArena);
+
+            }
+
+        }
+
+        return baseArenas;
+
+    }
+
 }

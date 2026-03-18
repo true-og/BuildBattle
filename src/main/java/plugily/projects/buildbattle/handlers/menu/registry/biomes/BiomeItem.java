@@ -26,31 +26,40 @@ import plugily.projects.minigamesbox.classic.utils.version.xseries.XBiome;
 
 /**
  * @author Plajer
- * <p>
- * Created at 03.02.2019
+ *         <p>
+ *         Created at 03.02.2019
  */
 public class BiomeItem {
 
-  public static final BiomeItem INVALID_BIOME = new BiomeItem(new ItemStack(Material.DIRT), "", XBiome.PLAINS);
-  private final ItemStack itemStack;
-  private final String permission;
-  private final XBiome biome;
+    public static final BiomeItem INVALID_BIOME = new BiomeItem(new ItemStack(Material.DIRT), "", XBiome.PLAINS);
+    private final ItemStack itemStack;
+    private final String permission;
+    private final XBiome biome;
 
-  public BiomeItem(ItemStack itemStack, String permission, XBiome biome) {
-    this.itemStack = itemStack;
-    this.permission = permission;
-    this.biome = biome;
-  }
+    public BiomeItem(ItemStack itemStack, String permission, XBiome biome) {
 
-  public ItemStack getItemStack() {
-    return itemStack;
-  }
+        this.itemStack = itemStack;
+        this.permission = permission;
+        this.biome = biome;
 
-  public String getPermission() {
-    return permission;
-  }
+    }
 
-  public XBiome getBiome() {
-    return biome;
-  }
+    public ItemStack getItemStack() {
+
+        return itemStack;
+
+    }
+
+    public String getPermission() {
+
+        return permission;
+
+    }
+
+    public XBiome getBiome() {
+
+        return biome;
+
+    }
+
 }

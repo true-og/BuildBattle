@@ -26,20 +26,25 @@ import plugily.projects.minigamesbox.classic.utils.helper.ItemBuilder;
 import plugily.projects.minigamesbox.classic.utils.version.xseries.XMaterial;
 import plugily.projects.minigamesbox.inventory.normal.NormalFastInv;
 
-
 /**
  * @author Tigerpanzer_02
- * <p>
- * Created at 01.07.2022
+ *         <p>
+ *         Created at 01.07.2022
  */
 public class LocationCategory extends PluginLocationCategory {
-  @Override
-  public void addItems(NormalFastInv gui) {
-    super.addItems(gui);
 
-    LocationItem starting = new LocationItem(getSetupInventory(), new ItemBuilder(XMaterial.EMERALD_BLOCK.parseMaterial()), "Plot World", "Set the location to \nvalidate the world with your plots! Make sure to use a location in the mid of all the plots!", "startlocation");
-    getItemList().add(starting);
-    gui.setItem((getInventoryLine() * 9) + 2, starting);
-  }
+    @Override
+    public void addItems(NormalFastInv gui) {
+
+        super.addItems(gui);
+
+        LocationItem starting = new LocationItem(getSetupInventory(),
+                new ItemBuilder(XMaterial.EMERALD_BLOCK.parseMaterial()), "Plot World",
+                "Set the location to \nvalidate the world with your plots! Make sure to use a location in the mid of all the plots!",
+                "startlocation");
+        getItemList().add(starting);
+        gui.setItem((getInventoryLine() * 9) + 2, starting);
+
+    }
 
 }

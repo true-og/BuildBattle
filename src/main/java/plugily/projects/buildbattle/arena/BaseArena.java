@@ -35,7 +35,6 @@ import plugily.projects.minigamesbox.classic.handlers.language.TitleBuilder;
 import plugily.projects.minigamesbox.classic.handlers.reward.RewardType;
 import plugily.projects.minigamesbox.classic.handlers.reward.RewardsFactory;
 import plugily.projects.minigamesbox.classic.utils.actionbar.ActionBar;
-import plugily.projects.minigamesbox.classic.utils.items.HandlerItem;
 import plugily.projects.minigamesbox.classic.utils.version.VersionUtils;
 
 import java.util.ArrayList;
@@ -45,229 +44,314 @@ import java.util.Map;
 
 /**
  * @author Tigerpanzer_02
- * <p>
- * Created at 17.12.2021
+ *         <p>
+ *         Created at 17.12.2021
  */
 public class BaseArena extends PluginArena {
 
-  private static Main plugin;
-  private final List<Player> spectators = new ArrayList<>();
-  private MapRestorerManager mapRestorerManager;
-  private final PlotManager plotManager;
-  private String theme = null;
-  protected ParticleRefreshScheduler particleRefreshScheduler;
-  private ArenaType arenaType;
+    private static Main plugin;
+    private final List<Player> spectators = new ArrayList<>();
+    private MapRestorerManager mapRestorerManager;
+    private final PlotManager plotManager;
+    private String theme = null;
+    protected ParticleRefreshScheduler particleRefreshScheduler;
+    private ArenaType arenaType;
 
-  private ArenaInGameState arenaInGameState = ArenaInGameState.NONE;
+    private ArenaInGameState arenaInGameState = ArenaInGameState.NONE;
 
-  private Map<Player, Plot> plotList = new HashMap<>();
+    private Map<Player, Plot> plotList = new HashMap<>();
 
-  private Plot winnerPlot;
+    private Plot winnerPlot;
 
-  public BaseArena(String id) {
-    super(id);
-    setPluginValues();
-    setScoreboardManager(new ScoreboardManager(this));
-    mapRestorerManager = new MapRestorerManager(this);
-    plotManager = new PlotManager(this);
-    setMapRestorerManager(mapRestorerManager);
-  }
+    public BaseArena(String id) {
 
-  public static void init(Main plugin) {
-    BaseArena.plugin = plugin;
-  }
+        super(id);
+        setPluginValues();
+        setScoreboardManager(new ScoreboardManager(this));
+        mapRestorerManager = new MapRestorerManager(this);
+        plotManager = new PlotManager(this);
+        setMapRestorerManager(mapRestorerManager);
 
-  @Override
-  public Main getPlugin() {
-    return plugin;
-  }
-
-
-  @Override
-  public MapRestorerManager getMapRestorerManager() {
-    return mapRestorerManager;
-  }
-
-
-  private void setPluginValues() {
-  }
-
-
-  public void addSpectatorPlayer(Player player) {
-    spectators.add(player);
-  }
-
-  public void removeSpectatorPlayer(Player player) {
-    spectators.remove(player);
-  }
-
-  public boolean isSpectatorPlayer(Player player) {
-    return spectators.contains(player);
-  }
-
-  public void cleanUpArena() {
-    spectators.clear();
-    plotList.clear();
-    setTheme(null);
-    winnerPlot = null;
-  }
-
-  public List<Player> getSpectators() {
-    return spectators;
-  }
-
-  public enum ArenaType {
-    SOLO("Classic"), TEAM("Teams"), GUESS_THE_BUILD("Guess-The-Build");
-
-    private final String prefix;
-
-    ArenaType(String prefix) {
-      this.prefix = prefix;
     }
 
-    public String getPrefix() {
-      return prefix;
-    }
-  }
+    public static void init(Main plugin) {
 
-  public enum ArenaInGameState {
-    THEME_VOTING("Theme-Voting"), BUILD_TIME("Build-Time"), PLOT_VOTING("Plot-Voting"), NONE("NONE");
+        BaseArena.plugin = plugin;
 
-    private final String prefix;
-
-    ArenaInGameState(String prefix) {
-      this.prefix = prefix;
     }
 
-    public String getPrefix() {
-      return prefix;
-    }
-  }
+    @Override
+    public Main getPlugin() {
 
-  /**
-   * Get current arena theme
-   *
-   * @return arena theme String or "Theme" as default
-   */
-  @NotNull
-  public String getTheme() {
-    return theme;
-  }
+        return plugin;
 
-  public void setTheme(String arenaTheme) {
-    this.theme = arenaTheme;
-  }
-
-  public void sendBuildLeftTimeMessage() {
-    new TitleBuilder("IN_GAME_MESSAGES_PLOT_TIME_LEFT_TITLE").asKey().arena(this).sendArena();
-    MessageBuilder message = new MessageBuilder("IN_GAME_MESSAGES_PLOT_TIME_LEFT_CHAT").asKey().arena(this);
-    message.sendArena();
-    getPlayers().forEach(player ->
-        getPlugin().getActionBarManager().addActionBar(player, new ActionBar(message,
-            ActionBar.ActionBarType.DISPLAY)));
-  }
-
-  public final void checkPlayerOutSidePlot() {
-    if(plugin.getConfigPreferences().getOption("PLOT_MOVE_OUTSIDE")) {
-      return;
     }
 
-    if(getArenaOption("IN_PLOT_CHECKER") >= 3) {
-      setArenaOption("IN_PLOT_CHECKER", 0);
+    @Override
+    public MapRestorerManager getMapRestorerManager() {
 
-      for(Player player : getPlayersLeft()) {
-        Plot buildPlot = null;
+        return mapRestorerManager;
 
-        if(this instanceof BuildArena) {
-          buildPlot = getPlotFromPlayer(player);
-        } else if(this instanceof GuessArena) {
-          buildPlot = ((GuessArena) this).getBuildPlot();
-          player.setPlayerWeather(buildPlot.getWeatherType());
-          player.setPlayerTime(Plot.Time.format(buildPlot.getTime(), player.getWorld().getTime()), false);
+    }
+
+    private void setPluginValues() {
+
+    }
+
+    public void addSpectatorPlayer(Player player) {
+
+        spectators.add(player);
+
+    }
+
+    public void removeSpectatorPlayer(Player player) {
+
+        spectators.remove(player);
+
+    }
+
+    public boolean isSpectatorPlayer(Player player) {
+
+        return spectators.contains(player);
+
+    }
+
+    public void cleanUpArena() {
+
+        spectators.clear();
+        plotList.clear();
+        setTheme(null);
+        winnerPlot = null;
+
+    }
+
+    public List<Player> getSpectators() {
+
+        return spectators;
+
+    }
+
+    public enum ArenaType {
+
+        SOLO("Classic"), TEAM("Teams"), GUESS_THE_BUILD("Guess-The-Build");
+
+        private final String prefix;
+
+        ArenaType(String prefix) {
+
+            this.prefix = prefix;
+
         }
 
-        if(buildPlot != null && buildPlot.getCuboid() != null && !buildPlot.getCuboid().isInWithMarge(player.getLocation(), 5)) {
-          VersionUtils.teleport(player, buildPlot.getTeleportLocation());
-          new MessageBuilder("IN_GAME_MESSAGES_PLOT_PERMISSION_OUTSIDE").asKey().arena(this).player(player).sendPlayer();
+        public String getPrefix() {
+
+            return prefix;
+
         }
-      }
+
     }
 
-    changeArenaOptionBy("IN_PLOT_CHECKER", 1);
-  }
+    public enum ArenaInGameState {
 
-  public void calculateWinnerPlot() {
-    winnerPlot = plotManager.getTopPlotsOrder().get(0);
-  }
+        THEME_VOTING("Theme-Voting"), BUILD_TIME("Build-Time"), PLOT_VOTING("Plot-Voting"), NONE("NONE");
 
-  public void executeEndRewards() {
-    RewardsFactory rewards = plugin.getRewardsHandler();
-    RewardType placeRewardType = rewards.getRewardType("PLACE");
+        private final String prefix;
 
-    List<Plot> plotsRanking = plotManager.getTopPlotsOrder();
+        ArenaInGameState(String prefix) {
 
-    plotsRanking.forEach(plot -> plot.getMembers().forEach(player -> rewards.performReward(player, this, placeRewardType, plotsRanking.indexOf(plot) + 1)));
-    plugin.getRewardsHandler().performReward(this, plugin.getRewardsHandler().getRewardType("END_GAME"));
-  }
+            this.prefix = prefix;
 
-  public void teleportToWinnerPlot() {
-    Location winnerLocation = winnerPlot.getTeleportLocation();
-    String formattedMembers = winnerPlot.getFormattedMembers();
-    for(Player player : getPlayers()) {
-      VersionUtils.teleport(player, winnerLocation);
-      new TitleBuilder("IN_GAME_MESSAGES_PLOT_VOTING_WINNER").asKey().player(player).value(formattedMembers).sendPlayer();
+        }
+
+        public String getPrefix() {
+
+            return prefix;
+
+        }
+
     }
-  }
 
-  public PlotManager getPlotManager() {
-    return plotManager;
-  }
+    /**
+     * Get current arena theme
+     *
+     * @return arena theme String or "Theme" as default
+     */
+    @NotNull
+    public String getTheme() {
 
-  public ArenaType getArenaType() {
-    return arenaType;
-  }
+        return theme;
 
-  public void setArenaType(ArenaType arenaType) {
-    this.arenaType = arenaType;
-  }
+    }
 
-  public ArenaInGameState getArenaInGameState() {
-    return arenaInGameState;
-  }
+    public void setTheme(String arenaTheme) {
 
-  public void setArenaInGameState(ArenaInGameState arenaInGameState) {
-    this.arenaInGameState = arenaInGameState;
-  }
+        this.theme = arenaTheme;
 
-  public ParticleRefreshScheduler getParticleRefreshScheduler() {
-    return particleRefreshScheduler;
-  }
+    }
 
-  public void setParticleRefreshScheduler(ParticleRefreshScheduler particleRefreshScheduler) {
-    this.particleRefreshScheduler = particleRefreshScheduler;
-  }
+    public void sendBuildLeftTimeMessage() {
 
-  public boolean enoughPlayersToContinue() {
-    return true;
-  }
+        new TitleBuilder("IN_GAME_MESSAGES_PLOT_TIME_LEFT_TITLE").asKey().arena(this).sendArena();
+        MessageBuilder message = new MessageBuilder("IN_GAME_MESSAGES_PLOT_TIME_LEFT_CHAT").asKey().arena(this);
+        message.sendArena();
+        getPlayers().forEach(player -> getPlugin().getActionBarManager().addActionBar(player,
+                new ActionBar(message, ActionBar.ActionBarType.DISPLAY)));
 
-  public void distributePlots() {
-  }
+    }
 
-  public Map<Player, Plot> getPlotList() {
-    return plotList;
-  }
+    public final void checkPlayerOutSidePlot() {
 
-  public Plot getPlotFromPlayer(Player player) {
-    return plotList.get(player);
-  }
+        if (plugin.getConfigPreferences().getOption("PLOT_MOVE_OUTSIDE")) {
 
-  public Plot getWinnerPlot() {
-    return winnerPlot;
-  }
+            return;
 
-  public void setWinnerPlot(Plot winnerPlot) {
-    this.winnerPlot = winnerPlot;
-  }
+        }
+
+        if (getArenaOption("IN_PLOT_CHECKER") >= 3) {
+
+            setArenaOption("IN_PLOT_CHECKER", 0);
+
+            for (Player player : getPlayersLeft()) {
+
+                Plot buildPlot = null;
+
+                if (this instanceof BuildArena) {
+
+                    buildPlot = getPlotFromPlayer(player);
+
+                } else if (this instanceof GuessArena) {
+
+                    buildPlot = ((GuessArena) this).getBuildPlot();
+                    player.setPlayerWeather(buildPlot.getWeatherType());
+                    player.setPlayerTime(Plot.Time.format(buildPlot.getTime(), player.getWorld().getTime()), false);
+
+                }
+
+                if (buildPlot != null && buildPlot.getCuboid() != null
+                        && !buildPlot.getCuboid().isInWithMarge(player.getLocation(), 5))
+                {
+
+                    VersionUtils.teleport(player, buildPlot.getTeleportLocation());
+                    new MessageBuilder("IN_GAME_MESSAGES_PLOT_PERMISSION_OUTSIDE").asKey().arena(this).player(player)
+                            .sendPlayer();
+
+                }
+
+            }
+
+        }
+
+        changeArenaOptionBy("IN_PLOT_CHECKER", 1);
+
+    }
+
+    public void calculateWinnerPlot() {
+
+        winnerPlot = plotManager.getTopPlotsOrder().get(0);
+
+    }
+
+    public void executeEndRewards() {
+
+        RewardsFactory rewards = plugin.getRewardsHandler();
+        RewardType placeRewardType = rewards.getRewardType("PLACE");
+
+        List<Plot> plotsRanking = plotManager.getTopPlotsOrder();
+
+        plotsRanking.forEach(plot -> plot.getMembers().forEach(
+                player -> rewards.performReward(player, this, placeRewardType, plotsRanking.indexOf(plot) + 1)));
+        plugin.getRewardsHandler().performReward(this, plugin.getRewardsHandler().getRewardType("END_GAME"));
+
+    }
+
+    public void teleportToWinnerPlot() {
+
+        Location winnerLocation = winnerPlot.getTeleportLocation();
+        String formattedMembers = winnerPlot.getFormattedMembers();
+        for (Player player : getPlayers()) {
+
+            VersionUtils.teleport(player, winnerLocation);
+            new TitleBuilder("IN_GAME_MESSAGES_PLOT_VOTING_WINNER").asKey().player(player).value(formattedMembers)
+                    .sendPlayer();
+
+        }
+
+    }
+
+    public PlotManager getPlotManager() {
+
+        return plotManager;
+
+    }
+
+    public ArenaType getArenaType() {
+
+        return arenaType;
+
+    }
+
+    public void setArenaType(ArenaType arenaType) {
+
+        this.arenaType = arenaType;
+
+    }
+
+    public ArenaInGameState getArenaInGameState() {
+
+        return arenaInGameState;
+
+    }
+
+    public void setArenaInGameState(ArenaInGameState arenaInGameState) {
+
+        this.arenaInGameState = arenaInGameState;
+
+    }
+
+    public ParticleRefreshScheduler getParticleRefreshScheduler() {
+
+        return particleRefreshScheduler;
+
+    }
+
+    public void setParticleRefreshScheduler(ParticleRefreshScheduler particleRefreshScheduler) {
+
+        this.particleRefreshScheduler = particleRefreshScheduler;
+
+    }
+
+    public boolean enoughPlayersToContinue() {
+
+        return true;
+
+    }
+
+    public void distributePlots() {
+
+    }
+
+    public Map<Player, Plot> getPlotList() {
+
+        return plotList;
+
+    }
+
+    public Plot getPlotFromPlayer(Player player) {
+
+        return plotList.get(player);
+
+    }
+
+    public Plot getWinnerPlot() {
+
+        return winnerPlot;
+
+    }
+
+    public void setWinnerPlot(Plot winnerPlot) {
+
+        this.winnerPlot = winnerPlot;
+
+    }
 
 }

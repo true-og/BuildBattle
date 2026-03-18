@@ -25,56 +25,76 @@ import plugily.projects.minigamesbox.inventory.utils.fastinv.PaginatedFastInv;
 
 /**
  * @author Plajer
- * <p>
- * Created at 23.12.2018
- * Represents category of heads
- * ex. category of animal heads
+ *         <p>
+ *         Created at 23.12.2018 Represents category of heads ex. category of
+ *         animal heads
  */
 public class HeadsCategory {
 
-  private final String categoryID;
-  private ItemStack itemStack;
-  private String permission;
-  private PaginatedFastInv gui;
-  private boolean search = false;
+    private final String categoryID;
+    private ItemStack itemStack;
+    private String permission;
+    private PaginatedFastInv gui;
+    private boolean search = false;
 
-  public HeadsCategory(String categoryID) {
-    this.categoryID = categoryID;
-  }
+    public HeadsCategory(String categoryID) {
 
-  public String getCategoryID() {
-    return categoryID;
-  }
+        this.categoryID = categoryID;
 
-  public ItemStack getItemStack() {
-    return itemStack;
-  }
+    }
 
-  public void setItemStack(ItemStack itemStack) {
-    this.itemStack = itemStack;
-  }
+    public String getCategoryID() {
 
-  public String getPermission() {
-    return permission;
-  }
+        return categoryID;
 
-  public void setPermission(String permission) {
-    this.permission = permission;
-  }
+    }
 
-  public PaginatedFastInv getGui() {
-    return gui;
-  }
+    public ItemStack getItemStack() {
 
-  public void setGui(PaginatedFastInv inventoryView) {
-    this.gui = inventoryView;
-  }
+        return itemStack;
 
-  public void setSearch(boolean search) {
-    this.search = search;
-  }
+    }
 
-  public boolean isSearch() {
-    return search;
-  }
+    public void setItemStack(ItemStack itemStack) {
+
+        this.itemStack = itemStack;
+
+    }
+
+    public String getPermission() {
+
+        return permission;
+
+    }
+
+    public void setPermission(String permission) {
+
+        this.permission = permission;
+
+    }
+
+    public PaginatedFastInv getGui() {
+
+        return gui;
+
+    }
+
+    public void setGui(PaginatedFastInv inventoryView) {
+
+        this.gui = inventoryView;
+
+    }
+
+    public void setSearch(boolean search) {
+
+        this.search = search;
+
+    }
+
+    public boolean isSearch() {
+
+        return search;
+
+    }
+
 }

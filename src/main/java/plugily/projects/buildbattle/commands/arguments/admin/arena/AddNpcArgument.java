@@ -33,28 +33,41 @@ import plugily.projects.minigamesbox.classic.handlers.language.MessageBuilder;
 
 /**
  * @author Plajer
- * <p>
- * Created at 11.01.2019
+ *         <p>
+ *         Created at 11.01.2019
  */
 public class AddNpcArgument {
 
-  public AddNpcArgument(ArgumentsRegistry registry) {
-    registry.mapArgument("buildbattleadmin", new LabeledCommandArgument("addnpc", "buildbattle.admin.addnpc", CommandArgument.ExecutorType.PLAYER,
-        new LabelData("/bba addnpc", "/bba addnpc",
-            "&7Deletes specified arena\n&6Permission: &7buildbattle.admin.addnpc")) {
-      @Override
-      public void execute(CommandSender sender, String[] args) {
-        if(registry.getPlugin().getServer().getPluginManager().isPluginEnabled("Citizens")) {
-          NPC npc = CitizensAPI.getNPCRegistry().createNPC(EntityType.VILLAGER, new MessageBuilder("IN_GAME_MESSAGES_PLOT_NPC_NAME").asKey().build());
-          npc.spawn(((Player) sender).getLocation());
-          npc.setProtected(true);
-          npc.setName(new MessageBuilder("IN_GAME_MESSAGES_PLOT_NPC_NAME").asKey().build());
-          new MessageBuilder("IN_GAME_MESSAGES_PLOT_NPC_CREATED").asKey().send(sender);
-        } else {
-          new MessageBuilder("IN_GAME_MESSAGES_PLOT_NPC_CITIZENS").asKey().send(sender);
-        }
-      }
-    });
-  }
+    public AddNpcArgument(ArgumentsRegistry registry) {
+
+        registry.mapArgument("buildbattleadmin",
+                new LabeledCommandArgument("addnpc", "buildbattle.admin.addnpc", CommandArgument.ExecutorType.PLAYER,
+                        new LabelData("/bba addnpc", "/bba addnpc",
+                                "&7Deletes specified arena\n&6Permission: &7buildbattle.admin.addnpc"))
+                {
+
+                    @Override
+                    public void execute(CommandSender sender, String[] args) {
+
+                        if (registry.getPlugin().getServer().getPluginManager().isPluginEnabled("Citizens")) {
+
+                            NPC npc = CitizensAPI.getNPCRegistry().createNPC(EntityType.VILLAGER,
+                                    new MessageBuilder("IN_GAME_MESSAGES_PLOT_NPC_NAME").asKey().build());
+                            npc.spawn(((Player) sender).getLocation());
+                            npc.setProtected(true);
+                            npc.setName(new MessageBuilder("IN_GAME_MESSAGES_PLOT_NPC_NAME").asKey().build());
+                            new MessageBuilder("IN_GAME_MESSAGES_PLOT_NPC_CREATED").asKey().send(sender);
+
+                        } else {
+
+                            new MessageBuilder("IN_GAME_MESSAGES_PLOT_NPC_CITIZENS").asKey().send(sender);
+
+                        }
+
+                    }
+
+                });
+
+    }
 
 }

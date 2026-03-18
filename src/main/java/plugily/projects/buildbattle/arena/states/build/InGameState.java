@@ -39,265 +39,398 @@ import java.util.List;
 
 /**
  * @author Tigerpanzer_02
- * <p>Created at 28.05.2022
+ *         <p>
+ *         Created at 28.05.2022
  */
 public class InGameState extends PluginInGameState {
 
-  @Override
-  public void handleCall(PluginArena arena) {
-    super.handleCall(arena);
-    BuildArena pluginArena = (BuildArena) getPlugin().getArenaRegistry().getArena(arena.getId());
-    if(pluginArena == null) {
-      return;
-    }
-    switch(pluginArena.getArenaInGameState()) {
-      case THEME_VOTING:
-        if(arena.getTimer() <= 0 || pluginArena.getTheme() != null) {
-          // may consider start to build message...
-          pluginArena.setArenaInGameState(BaseArena.ArenaInGameState.BUILD_TIME);
+    @Override
+    public void handleCall(PluginArena arena) {
 
-          setArenaTimer(getPlugin().getConfig().getInt("Time-Manager." + pluginArena.getArenaType().getPrefix() + ".In-Game"));
+        super.handleCall(arena);
+        BuildArena pluginArena = (BuildArena) getPlugin().getArenaRegistry().getArena(arena.getId());
+        if (pluginArena == null) {
 
-          if(pluginArena.getVotePoll() != null && pluginArena.getTheme() == null) {
-            pluginArena.setTheme(pluginArena.getVotePoll().getVotedTheme());
-            new MessageBuilder("IN_GAME_MESSAGES_PLOT_GTB_THEME_NAME").asKey().arena(pluginArena).sendArena();
-          }
+            return;
 
-          for(Player player : pluginArena.getPlayersLeft()) {
-            player.closeInventory();
-            player.setGameMode(GameMode.CREATIVE);
-            VersionUtils.setCollidable(player, false);
-          }
-          // second time after voting as sometimes world switch causing no teleportation!
-          pluginArena.getPlotManager().teleportToPlots();
-        } else {
-          handleThemeVoting(pluginArena);
         }
 
-        break;
-      case BUILD_TIME:
-        handleBuildTime(pluginArena);
-        handleOptionsMenu(pluginArena);
-        if(arena.getTimer() <= 0) {
-          for(Player player : pluginArena.getPlayersLeft()) {
-            IUser user = getPlugin().getUserManager().getUser(player);
+        switch (pluginArena.getArenaInGameState()) {
 
-            Plot playerPlot = pluginArena.getPlotFromPlayer(player);
-            if(!pluginArena.getQueue().contains(playerPlot)) {
-              pluginArena.getQueue().add(playerPlot);
-            }
-            player.getInventory().clear();
-            pluginArena.getPlugin().getVoteItems().giveVoteItems(player);
-            user.setStatistic("LOCAL_POINTS", 3);
-          }
+            case THEME_VOTING:
+                if (arena.getTimer() <= 0 || pluginArena.getTheme() != null) {
 
-          pluginArena.setArenaInGameState(BaseArena.ArenaInGameState.PLOT_VOTING);
-          voteForNextPlot(pluginArena);
+                    // may consider start to build message...
+                    pluginArena.setArenaInGameState(BaseArena.ArenaInGameState.BUILD_TIME);
+
+                    setArenaTimer(getPlugin().getConfig()
+                            .getInt("Time-Manager." + pluginArena.getArenaType().getPrefix() + ".In-Game"));
+
+                    if (pluginArena.getVotePoll() != null && pluginArena.getTheme() == null) {
+
+                        pluginArena.setTheme(pluginArena.getVotePoll().getVotedTheme());
+                        new MessageBuilder("IN_GAME_MESSAGES_PLOT_GTB_THEME_NAME").asKey().arena(pluginArena)
+                                .sendArena();
+
+                    }
+
+                    for (Player player : pluginArena.getPlayersLeft()) {
+
+                        player.closeInventory();
+                        player.setGameMode(GameMode.CREATIVE);
+                        VersionUtils.setCollidable(player, false);
+
+                    }
+
+                    // second time after voting as sometimes world switch causing no teleportation!
+                    pluginArena.getPlotManager().teleportToPlots();
+
+                } else {
+
+                    handleThemeVoting(pluginArena);
+
+                }
+
+                break;
+            case BUILD_TIME:
+                handleBuildTime(pluginArena);
+                handleOptionsMenu(pluginArena);
+                if (arena.getTimer() <= 0) {
+
+                    for (Player player : pluginArena.getPlayersLeft()) {
+
+                        IUser user = getPlugin().getUserManager().getUser(player);
+
+                        Plot playerPlot = pluginArena.getPlotFromPlayer(player);
+                        if (!pluginArena.getQueue().contains(playerPlot)) {
+
+                            pluginArena.getQueue().add(playerPlot);
+
+                        }
+
+                        player.getInventory().clear();
+                        pluginArena.getPlugin().getVoteItems().giveVoteItems(player);
+                        user.setStatistic("LOCAL_POINTS", 3);
+
+                    }
+
+                    pluginArena.setArenaInGameState(BaseArena.ArenaInGameState.PLOT_VOTING);
+                    voteForNextPlot(pluginArena);
+
+                }
+                break;
+            case PLOT_VOTING:
+                handlePlotVoting(pluginArena);
+                if (arena.getTimer() <= 0) {
+
+                    calculatePlotResults(pluginArena);
+                    if (pluginArena.getQueue().isEmpty()) {
+
+                        pluginArena.calculateWinnerPlot();
+                        adjustStatistics(pluginArena);
+
+                        pluginArena.teleportToWinnerPlot();
+                        getPlugin().getArenaManager().stopGame(false, arena);
+                        pluginArena.executeEndRewards();
+
+                    } else {
+
+                        voteForNextPlot(pluginArena);
+
+                    }
+
+                }
+                break;
+            default:
+                break;
+
         }
-        break;
-      case PLOT_VOTING:
-        handlePlotVoting(pluginArena);
-        if(arena.getTimer() <= 0) {
-          calculatePlotResults(pluginArena);
-          if(pluginArena.getQueue().isEmpty()) {
-            pluginArena.calculateWinnerPlot();
-            adjustStatistics(pluginArena);
 
-            pluginArena.teleportToWinnerPlot();
-            getPlugin().getArenaManager().stopGame(false, arena);
-            pluginArena.executeEndRewards();
-          } else {
-            voteForNextPlot(pluginArena);
-          }
+        // no players - stop game
+        if (!pluginArena.enoughPlayersToContinue()) {
+
+            getPlugin().getArenaManager().stopGame(true, pluginArena);
+
         }
-        break;
-      default:
-        break;
-    }
-    // no players - stop game
-    if(!pluginArena.enoughPlayersToContinue()) {
-      getPlugin().getArenaManager().stopGame(true, pluginArena);
-    }
-  }
 
-  private void calculatePlotResults(BuildArena pluginArena) {
-    Plot votingPlot = pluginArena.getVotingPlot();
-
-    if(votingPlot == null || votingPlot.getPoints() != 0) {
-      return;
     }
 
-    boolean hidePlotOwner = getPlugin().getConfigPreferences().getOption("PLOT_HIDE_OWNER");
-    String formattedMembers = "";
+    private void calculatePlotResults(BuildArena pluginArena) {
 
-    if(hidePlotOwner) {
-      formattedMembers = votingPlot.getFormattedMembers();
-    }
-    List<Plot> plotsVoted = new ArrayList<>();
-    for(Player player : pluginArena.getPlayersLeft()) {
-      if(hidePlotOwner) {
-        new MessageBuilder("IN_GAME_MESSAGES_PLOT_VOTING_PLOT_OWNER_WAS").asKey().arena(pluginArena).player(player).value(formattedMembers).sendArena();
-        new TitleBuilder("IN_GAME_MESSAGES_PLOT_VOTING_PLOT_OWNER_TITLE").asKey().arena(pluginArena).player(player).value(formattedMembers).sendArena();
-      }
+        Plot votingPlot = pluginArena.getVotingPlot();
 
-      IUser user = getPlugin().getUserManager().getUser(player);
-      int points = user.getStatistic("LOCAL_POINTS");
+        if (votingPlot == null || votingPlot.getPoints() != 0) {
 
-      //no vote made, in this case make it a good vote
-      if(points == 0) {
-        points = 3;
-      }
-      Plot plot = pluginArena.getPlotFromPlayer(player);
-      if(!votingPlot.getMembers().contains(player)) {
-        if(!plotsVoted.contains(plot)) {
-          votingPlot.addPoints(points);
-          plotsVoted.add(plot);
+            return;
+
         }
-      }
 
-      user.setStatistic("LOCAL_POINTS", 3);
-    }
-  }
+        boolean hidePlotOwner = getPlugin().getConfigPreferences().getOption("PLOT_HIDE_OWNER");
+        String formattedMembers = "";
 
-  private void adjustStatistics(BuildArena pluginArena) {
-    for(Plot plot : pluginArena.getPlotManager().getTopPlotsOrder()) {
-      plot.getMembers().forEach(player -> {
-        IUser user = getPlugin().getUserManager().getUser(player);
-        if(plot.getPoints() > user.getStatistic("POINTS_HIGHEST")) {
-          user.setStatistic("POINTS_HIGHEST", plot.getPoints());
+        if (hidePlotOwner) {
+
+            formattedMembers = votingPlot.getFormattedMembers();
+
         }
-        user.adjustStatistic("POINTS_TOTAL", plot.getPoints());
-        if(plot == pluginArena.getWinnerPlot()) {
-          user.adjustStatistic("WINS", 1);
-        } else {
-          user.adjustStatistic("LOSES", 1);
-        }
-        getPlugin().getUserManager().addExperience(player, 5);
-        if(plot.getPoints() > user.getStatistic("POINTS_HIGHEST_WIN")) {
-          user.setStatistic("POINTS_HIGHEST_WIN", plot.getPoints());
-        }
-      });
-    }
-  }
 
-  private void handleThemeVoting(BuildArena pluginArena) {
-    for(Player player : pluginArena.getPlayersLeft()) {
-      pluginArena.getVoteMenu().updateInventory(player);
-    }
-  }
-
-  private void handleBuildTime(BuildArena pluginArena) {
-    int timer = pluginArena.getTimer();
-    for(int timers : getPlugin().getConfig().getIntegerList("Time-Manager.Time-Left-Intervals")) {
-      if(timers == timer) {
-        pluginArena.sendBuildLeftTimeMessage();
-        break;
-      }
-    }
-    pluginArena.checkPlayerOutSidePlot();
-  }
-
-  private void handleOptionsMenu(BuildArena pluginArena) {
-    if(pluginArena.getTimer() % 10 != 0) {
-      return;
-    }
-    for(Player player : pluginArena.getPlayersLeft()) {
-      pluginArena.getPlugin().getSpecialItemManager().getSpecialItem("OPTIONS_MENU").setItem(player);
-    }
-  }
-
-  private void handlePlotVoting(BuildArena pluginArena) {
-
-  }
-
-  public void voteForNextPlot(BuildArena pluginArena) {
-    Plot votingPlot = pluginArena.getVotingPlot();
-
-    if(votingPlot != null) {
-      if(votingPlot.getPoints() == 0) {
         List<Plot> plotsVoted = new ArrayList<>();
-        for(Player player : pluginArena.getPlayersLeft()) {
-          IUser user = getPlugin().getUserManager().getUser(player);
-          Plot plot = pluginArena.getPlotFromPlayer(player);
-          if(!votingPlot.getMembers().contains(player)) {
-            if(!plotsVoted.contains(plot)) {
-              votingPlot.addPoints(user.getStatistic("LOCAL_POINTS"));
-              plotsVoted.add(plot);
+        for (Player player : pluginArena.getPlayersLeft()) {
+
+            if (hidePlotOwner) {
+
+                new MessageBuilder("IN_GAME_MESSAGES_PLOT_VOTING_PLOT_OWNER_WAS").asKey().arena(pluginArena)
+                        .player(player).value(formattedMembers).sendArena();
+                new TitleBuilder("IN_GAME_MESSAGES_PLOT_VOTING_PLOT_OWNER_TITLE").asKey().arena(pluginArena)
+                        .player(player).value(formattedMembers).sendArena();
+
             }
-          }
 
-          user.setStatistic("LOCAL_POINTS", 3);
+            IUser user = getPlugin().getUserManager().getUser(player);
+            int points = user.getStatistic("LOCAL_POINTS");
 
-          VoteItems voteItems = pluginArena.getPlugin().getVoteItems();
+            // no vote made, in this case make it a good vote
+            if (points == 0) {
 
-          if(!player.getInventory().contains(voteItems.getReportItem())) {
-            player.getInventory().setItem(voteItems.getReportVoteItem().getSlot(), voteItems.getReportVoteItem().getItemStack());
-            player.updateInventory();
-          }
+                points = 3;
+
+            }
+
+            Plot plot = pluginArena.getPlotFromPlayer(player);
+            if (!votingPlot.getMembers().contains(player)) {
+
+                if (!plotsVoted.contains(plot)) {
+
+                    votingPlot.addPoints(points);
+                    plotsVoted.add(plot);
+
+                }
+
+            }
+
+            user.setStatistic("LOCAL_POINTS", 3);
+
         }
-      }
 
-      if(!votingPlot.getMembers().isEmpty() && getPlugin().getConfigPreferences().getOption("PLOT_HIDE_OWNER")) {
-        String formattedMembers = votingPlot.getFormattedMembers();
-
-        new MessageBuilder("IN_GAME_MESSAGES_PLOT_VOTING_PLOT_OWNER_WAS").asKey().arena(pluginArena).value(formattedMembers).sendArena();
-        new TitleBuilder("IN_GAME_MESSAGES_PLOT_VOTING_PLOT_OWNER_TITLE").asKey().arena(pluginArena).value(formattedMembers).sendArena();
-      }
     }
 
-    voteRoutine(pluginArena);
-  }
+    private void adjustStatistics(BuildArena pluginArena) {
 
-  public void voteRoutine(BuildArena pluginArena) {
-    if(pluginArena.getQueue().isEmpty()) {
-      return;
+        for (Plot plot : pluginArena.getPlotManager().getTopPlotsOrder()) {
+
+            plot.getMembers().forEach(player -> {
+
+                IUser user = getPlugin().getUserManager().getUser(player);
+                if (plot.getPoints() > user.getStatistic("POINTS_HIGHEST")) {
+
+                    user.setStatistic("POINTS_HIGHEST", plot.getPoints());
+
+                }
+
+                user.adjustStatistic("POINTS_TOTAL", plot.getPoints());
+                if (plot == pluginArena.getWinnerPlot()) {
+
+                    user.adjustStatistic("WINS", 1);
+
+                } else {
+
+                    user.adjustStatistic("LOSES", 1);
+
+                }
+
+                getPlugin().getUserManager().addExperience(player, 5);
+                if (plot.getPoints() > user.getStatistic("POINTS_HIGHEST_WIN")) {
+
+                    user.setStatistic("POINTS_HIGHEST_WIN", plot.getPoints());
+
+                }
+
+            });
+
+        }
+
     }
 
-    setArenaTimer(getPlugin().getConfig().getInt("Time-Manager." + pluginArena.getArenaType().getPrefix() + ".Voting.Plot"));
+    private void handleThemeVoting(BuildArena pluginArena) {
 
-    Plot plot = pluginArena.getQueue().poll();
+        for (Player player : pluginArena.getPlayersLeft()) {
 
-    while(plot == null && !pluginArena.getQueue().isEmpty()) {
-      // should not happen anymore... to be removed
-      getPlugin().getDebugger().debug("A PLAYER HAS NO PLOT!");
-      plot = pluginArena.getQueue().poll();
+            pluginArena.getVoteMenu().updateInventory(player);
+
+        }
+
     }
 
-    if(pluginArena.getQueue().isEmpty() && plot == null) {
-      pluginArena.setVotingPlot(null);
-      return;
+    private void handleBuildTime(BuildArena pluginArena) {
+
+        int timer = pluginArena.getTimer();
+        for (int timers : getPlugin().getConfig().getIntegerList("Time-Manager.Time-Left-Intervals")) {
+
+            if (timers == timer) {
+
+                pluginArena.sendBuildLeftTimeMessage();
+                break;
+
+            }
+
+        }
+
+        pluginArena.checkPlayerOutSidePlot();
+
     }
 
-    pluginArena.setVotingPlot(plot);
+    private void handleOptionsMenu(BuildArena pluginArena) {
 
-    if(plot == null) {
-      return;
+        if (pluginArena.getTimer() % 10 != 0) {
+
+            return;
+
+        }
+
+        for (Player player : pluginArena.getPlayersLeft()) {
+
+            pluginArena.getPlugin().getSpecialItemManager().getSpecialItem("OPTIONS_MENU").setItem(player);
+
+        }
+
     }
 
-    Location teleportLoc = plot.getTeleportLocation();
-    String formattedMembers = plot.getFormattedMembers();
-    boolean hidePlotOwner = getPlugin().getConfigPreferences().getOption("PLOT_HIDE_OWNER");
+    private void handlePlotVoting(BuildArena pluginArena) {
 
-    for(Player player : pluginArena.getPlayersLeft()) {
-      VersionUtils.teleport(player, teleportLoc);
-      player.setPlayerWeather(plot.getWeatherType());
-      player.setPlayerTime(Plot.Time.format(plot.getTime(), player.getWorld().getTime()), false);
-
-      if(hidePlotOwner) {
-        new MessageBuilder("IN_GAME_MESSAGES_PLOT_VOTING_PLOT_OWNER_NEXT").asKey().arena(pluginArena).value("???").player(player).sendPlayer();
-      } else {
-        new TitleBuilder("IN_GAME_MESSAGES_PLOT_VOTING_PLOT_OWNER_TITLE").asKey().arena(pluginArena).value(formattedMembers).player(player).sendPlayer();
-        new MessageBuilder("IN_GAME_MESSAGES_PLOT_VOTING_PLOT_OWNER_NEXT").asKey().arena(pluginArena).value(formattedMembers).player(player).sendPlayer();
-      }
     }
 
-    for(Player spectator : pluginArena.getSpectators()) {
-      VersionUtils.teleport(spectator, teleportLoc);
-      spectator.setPlayerWeather(plot.getWeatherType());
-      spectator.setPlayerTime(Plot.Time.format(plot.getTime(), spectator.getWorld().getTime()), false);
+    public void voteForNextPlot(BuildArena pluginArena) {
 
-      new TitleBuilder("IN_GAME_MESSAGES_PLOT_VOTING_PLOT_OWNER_TITLE").asKey().arena(pluginArena).value(formattedMembers).player(spectator).sendPlayer();
-      new MessageBuilder("IN_GAME_MESSAGES_PLOT_VOTING_PLOT_OWNER_NEXT").asKey().arena(pluginArena).value(formattedMembers).player(spectator).sendPlayer();
+        Plot votingPlot = pluginArena.getVotingPlot();
+
+        if (votingPlot != null) {
+
+            if (votingPlot.getPoints() == 0) {
+
+                List<Plot> plotsVoted = new ArrayList<>();
+                for (Player player : pluginArena.getPlayersLeft()) {
+
+                    IUser user = getPlugin().getUserManager().getUser(player);
+                    Plot plot = pluginArena.getPlotFromPlayer(player);
+                    if (!votingPlot.getMembers().contains(player)) {
+
+                        if (!plotsVoted.contains(plot)) {
+
+                            votingPlot.addPoints(user.getStatistic("LOCAL_POINTS"));
+                            plotsVoted.add(plot);
+
+                        }
+
+                    }
+
+                    user.setStatistic("LOCAL_POINTS", 3);
+
+                    VoteItems voteItems = pluginArena.getPlugin().getVoteItems();
+
+                    if (!player.getInventory().contains(voteItems.getReportItem())) {
+
+                        player.getInventory().setItem(voteItems.getReportVoteItem().getSlot(),
+                                voteItems.getReportVoteItem().getItemStack());
+                        player.updateInventory();
+
+                    }
+
+                }
+
+            }
+
+            if (!votingPlot.getMembers().isEmpty() && getPlugin().getConfigPreferences().getOption("PLOT_HIDE_OWNER")) {
+
+                String formattedMembers = votingPlot.getFormattedMembers();
+
+                new MessageBuilder("IN_GAME_MESSAGES_PLOT_VOTING_PLOT_OWNER_WAS").asKey().arena(pluginArena)
+                        .value(formattedMembers).sendArena();
+                new TitleBuilder("IN_GAME_MESSAGES_PLOT_VOTING_PLOT_OWNER_TITLE").asKey().arena(pluginArena)
+                        .value(formattedMembers).sendArena();
+
+            }
+
+        }
+
+        voteRoutine(pluginArena);
+
     }
-  }
+
+    public void voteRoutine(BuildArena pluginArena) {
+
+        if (pluginArena.getQueue().isEmpty()) {
+
+            return;
+
+        }
+
+        setArenaTimer(getPlugin().getConfig()
+                .getInt("Time-Manager." + pluginArena.getArenaType().getPrefix() + ".Voting.Plot"));
+
+        Plot plot = pluginArena.getQueue().poll();
+
+        while (plot == null && !pluginArena.getQueue().isEmpty()) {
+
+            // should not happen anymore... to be removed
+            getPlugin().getDebugger().debug("A PLAYER HAS NO PLOT!");
+            plot = pluginArena.getQueue().poll();
+
+        }
+
+        if (pluginArena.getQueue().isEmpty() && plot == null) {
+
+            pluginArena.setVotingPlot(null);
+            return;
+
+        }
+
+        pluginArena.setVotingPlot(plot);
+
+        if (plot == null) {
+
+            return;
+
+        }
+
+        Location teleportLoc = plot.getTeleportLocation();
+        String formattedMembers = plot.getFormattedMembers();
+        boolean hidePlotOwner = getPlugin().getConfigPreferences().getOption("PLOT_HIDE_OWNER");
+
+        for (Player player : pluginArena.getPlayersLeft()) {
+
+            VersionUtils.teleport(player, teleportLoc);
+            player.setPlayerWeather(plot.getWeatherType());
+            player.setPlayerTime(Plot.Time.format(plot.getTime(), player.getWorld().getTime()), false);
+
+            if (hidePlotOwner) {
+
+                new MessageBuilder("IN_GAME_MESSAGES_PLOT_VOTING_PLOT_OWNER_NEXT").asKey().arena(pluginArena)
+                        .value("???").player(player).sendPlayer();
+
+            } else {
+
+                new TitleBuilder("IN_GAME_MESSAGES_PLOT_VOTING_PLOT_OWNER_TITLE").asKey().arena(pluginArena)
+                        .value(formattedMembers).player(player).sendPlayer();
+                new MessageBuilder("IN_GAME_MESSAGES_PLOT_VOTING_PLOT_OWNER_NEXT").asKey().arena(pluginArena)
+                        .value(formattedMembers).player(player).sendPlayer();
+
+            }
+
+        }
+
+        for (Player spectator : pluginArena.getSpectators()) {
+
+            VersionUtils.teleport(spectator, teleportLoc);
+            spectator.setPlayerWeather(plot.getWeatherType());
+            spectator.setPlayerTime(Plot.Time.format(plot.getTime(), spectator.getWorld().getTime()), false);
+
+            new TitleBuilder("IN_GAME_MESSAGES_PLOT_VOTING_PLOT_OWNER_TITLE").asKey().arena(pluginArena)
+                    .value(formattedMembers).player(spectator).sendPlayer();
+            new MessageBuilder("IN_GAME_MESSAGES_PLOT_VOTING_PLOT_OWNER_NEXT").asKey().arena(pluginArena)
+                    .value(formattedMembers).player(spectator).sendPlayer();
+
+        }
+
+    }
+
 }

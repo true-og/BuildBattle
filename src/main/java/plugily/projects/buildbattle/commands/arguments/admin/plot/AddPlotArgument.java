@@ -36,44 +36,69 @@ import plugily.projects.minigamesbox.classic.utils.serialization.LocationSeriali
 
 /**
  * @author Plajer
- * <p>
- * Created at 11.01.2019
+ *         <p>
+ *         Created at 11.01.2019
  */
 public class AddPlotArgument {
 
-  public AddPlotArgument(ArgumentsRegistry registry) {
-    registry.mapArgument("buildbattleadmin", new LabeledCommandArgument("addplot", "buildbattle.admin.addplot", CommandArgument.ExecutorType.PLAYER,
-        new LabelData("/bba addplot &6<arena>", "/bba addplot <arena>",
-            "&7Add new game plot to the arena\n&6Permission: &7buildbattle.admin.addplot")) {
-      @Override
-      public void execute(CommandSender sender, String[] args) {
-        if(args.length == 1) {
-          new MessageBuilder("COMMANDS_TYPE_ARENA_NAME").asKey().send(sender);
-          return;
-        }
-        BaseArena arena = (BaseArena) registry.getPlugin().getArenaRegistry().getArena(args[1]);
-        if(arena == null) {
-          new MessageBuilder("COMMANDS_NO_ARENA_LIKE_THAT").asKey().send(sender);
-          return;
-        }
-        Player player = (Player) sender;
-        CuboidSelector.Selection selection = registry.getPlugin().getCuboidSelector().getSelection(player);
-        if(selection == null || selection.getFirstPos() == null || selection.getSecondPos() == null) {
-          new MessageBuilder("&cPlease select both corners before adding a plot!").send(sender);
-          return;
-        }
-        FileConfiguration config = ConfigUtils.getConfig(registry.getPlugin(), "arenas");
-        int id = 0;
-        ConfigurationSection section = config.getConfigurationSection("instances." + arena.getId() + ".plots");
-        if(section != null) {
-          id = section.getKeys(false).size() + 1;
-        }
-        LocationSerializer.saveLoc(registry.getPlugin(), config, "arenas", "instances." + arena.getId() + ".plots." + id + ".1", selection.getFirstPos());
-        LocationSerializer.saveLoc(registry.getPlugin(), config, "arenas", "instances." + arena.getId() + ".plots." + id + ".2", selection.getSecondPos());
-        new MessageBuilder("&aPlot with ID &e" + id + "&a added to arena instance &e" + arena.getId()).send(sender);
-        registry.getPlugin().getCuboidSelector().removeSelection(player);
-      }
-    });
-  }
+    public AddPlotArgument(ArgumentsRegistry registry) {
+
+        registry.mapArgument("buildbattleadmin",
+                new LabeledCommandArgument("addplot", "buildbattle.admin.addplot", CommandArgument.ExecutorType.PLAYER,
+                        new LabelData("/bba addplot &6<arena>", "/bba addplot <arena>",
+                                "&7Add new game plot to the arena\n&6Permission: &7buildbattle.admin.addplot"))
+                {
+
+                    @Override
+                    public void execute(CommandSender sender, String[] args) {
+
+                        if (args.length == 1) {
+
+                            new MessageBuilder("COMMANDS_TYPE_ARENA_NAME").asKey().send(sender);
+                            return;
+
+                        }
+
+                        BaseArena arena = (BaseArena) registry.getPlugin().getArenaRegistry().getArena(args[1]);
+                        if (arena == null) {
+
+                            new MessageBuilder("COMMANDS_NO_ARENA_LIKE_THAT").asKey().send(sender);
+                            return;
+
+                        }
+
+                        Player player = (Player) sender;
+                        CuboidSelector.Selection selection = registry.getPlugin().getCuboidSelector()
+                                .getSelection(player);
+                        if (selection == null || selection.getFirstPos() == null || selection.getSecondPos() == null) {
+
+                            new MessageBuilder("&cPlease select both corners before adding a plot!").send(sender);
+                            return;
+
+                        }
+
+                        FileConfiguration config = ConfigUtils.getConfig(registry.getPlugin(), "arenas");
+                        int id = 0;
+                        ConfigurationSection section = config
+                                .getConfigurationSection("instances." + arena.getId() + ".plots");
+                        if (section != null) {
+
+                            id = section.getKeys(false).size() + 1;
+
+                        }
+
+                        LocationSerializer.saveLoc(registry.getPlugin(), config, "arenas",
+                                "instances." + arena.getId() + ".plots." + id + ".1", selection.getFirstPos());
+                        LocationSerializer.saveLoc(registry.getPlugin(), config, "arenas",
+                                "instances." + arena.getId() + ".plots." + id + ".2", selection.getSecondPos());
+                        new MessageBuilder("&aPlot with ID &e" + id + "&a added to arena instance &e" + arena.getId())
+                                .send(sender);
+                        registry.getPlugin().getCuboidSelector().removeSelection(player);
+
+                    }
+
+                });
+
+    }
 
 }

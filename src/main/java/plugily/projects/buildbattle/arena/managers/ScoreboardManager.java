@@ -23,55 +23,89 @@ package plugily.projects.buildbattle.arena.managers;
 import org.bukkit.entity.Player;
 import plugily.projects.buildbattle.arena.BaseArena;
 import plugily.projects.buildbattle.arena.GuessArena;
-import plugily.projects.minigamesbox.api.arena.IArenaState;
 import plugily.projects.minigamesbox.classic.arena.PluginArena;
 import plugily.projects.minigamesbox.classic.arena.managers.PluginScoreboardManager;
-import plugily.projects.minigamesbox.classic.handlers.language.MessageBuilder;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
  * @author Tigerpanzer_02
- * <p>Created at 19.12.2021
+ *         <p>
+ *         Created at 19.12.2021
  */
 public class ScoreboardManager extends PluginScoreboardManager {
 
-  private final PluginArena arena;
+    private final PluginArena arena;
 
-  public ScoreboardManager(PluginArena arena) {
-    super(arena);
-    this.arena = arena;
-  }
+    public ScoreboardManager(PluginArena arena) {
 
-  @Override
-  public List<String> getScoreboardLines(Player player) {
-    List<String> lines;
-    switch(arena.getArenaState()) {
-      case IN_GAME: {
-        if(arena instanceof GuessArena) {
-          lines = arena.getPlugin().getLanguageManager().getLanguageList("Scoreboard.Content." + arena.getArenaState().getFormattedName() + ".Guess-The-Build" + (((GuessArena) arena).getArenaInGameState() == BaseArena.ArenaInGameState.PLOT_VOTING ? "-Waiting" : ""));
-        } else {
-          if(arena.getArenaOption("PLOT_MEMBER_SIZE") <= 1) {
-            lines = arena.getPlugin().getLanguageManager().getLanguageList("Scoreboard.Content." + arena.getArenaState().getFormattedName() + ".Classic");
-          } else {
-            lines = arena.getPlugin().getLanguageManager().getLanguageList("Scoreboard.Content." + arena.getArenaState().getFormattedName() + ".Teams");
-          }
-        }
-        break;
-      }
-      case ENDING: {
-        if(arena instanceof GuessArena) {
-          lines = arena.getPlugin().getLanguageManager().getLanguageList("Scoreboard.Content." + arena.getArenaState().getFormattedName() + ".Guess-The-Build");
-        } else {
-          lines = arena.getPlugin().getLanguageManager().getLanguageList("Scoreboard.Content." + arena.getArenaState().getFormattedName() + ".Classic");
-        }
-        break;
-      }
-      default: {
-        lines = super.getScoreboardLines(player);
-      }
+        super(arena);
+        this.arena = arena;
+
     }
-    return lines;
-  }
+
+    @Override
+    public List<String> getScoreboardLines(Player player) {
+
+        List<String> lines;
+        switch (arena.getArenaState()) {
+
+            case IN_GAME: {
+
+                if (arena instanceof GuessArena) {
+
+                    lines = arena.getPlugin().getLanguageManager().getLanguageList("Scoreboard.Content."
+                            + arena.getArenaState().getFormattedName() + ".Guess-The-Build"
+                            + (((GuessArena) arena).getArenaInGameState() == BaseArena.ArenaInGameState.PLOT_VOTING
+                                    ? "-Waiting"
+                                    : ""));
+
+                } else {
+
+                    if (arena.getArenaOption("PLOT_MEMBER_SIZE") <= 1) {
+
+                        lines = arena.getPlugin().getLanguageManager().getLanguageList(
+                                "Scoreboard.Content." + arena.getArenaState().getFormattedName() + ".Classic");
+
+                    } else {
+
+                        lines = arena.getPlugin().getLanguageManager().getLanguageList(
+                                "Scoreboard.Content." + arena.getArenaState().getFormattedName() + ".Teams");
+
+                    }
+
+                }
+
+                break;
+
+            }
+            case ENDING: {
+
+                if (arena instanceof GuessArena) {
+
+                    lines = arena.getPlugin().getLanguageManager().getLanguageList(
+                            "Scoreboard.Content." + arena.getArenaState().getFormattedName() + ".Guess-The-Build");
+
+                } else {
+
+                    lines = arena.getPlugin().getLanguageManager().getLanguageList(
+                            "Scoreboard.Content." + arena.getArenaState().getFormattedName() + ".Classic");
+
+                }
+
+                break;
+
+            }
+            default: {
+
+                lines = super.getScoreboardLines(player);
+
+            }
+
+        }
+
+        return lines;
+
+    }
+
 }

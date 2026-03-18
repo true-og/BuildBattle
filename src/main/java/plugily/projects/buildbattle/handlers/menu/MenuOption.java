@@ -25,54 +25,70 @@ import org.bukkit.inventory.ItemStack;
 
 /**
  * @author Plajer
- * <p>
- * Created at 23.12.2018
+ *         <p>
+ *         Created at 23.12.2018
  */
 public class MenuOption {
 
-  private int slot;
-  private final String id;
-  private final ItemStack itemStack;
-  private String inventoryName;
+    private int slot;
+    private final String id;
+    private final ItemStack itemStack;
+    private String inventoryName;
 
-  public MenuOption(int slot, String id, ItemStack itemStack) {
-    this.slot = slot;
-    this.id = id;
-    this.itemStack = itemStack;
-  }
+    public MenuOption(int slot, String id, ItemStack itemStack) {
 
-  public MenuOption(int slot, String id, ItemStack itemStack, String inventoryName) {
-    this.slot = slot;
-    this.id = id;
-    this.itemStack = itemStack;
-    this.inventoryName = inventoryName;
-  }
+        this.slot = slot;
+        this.id = id;
+        this.itemStack = itemStack;
 
-  public int getSlot() {
-    return slot;
-  }
+    }
 
-  public void setSlot(int slot) {
-    this.slot = slot;
-  }
+    public MenuOption(int slot, String id, ItemStack itemStack, String inventoryName) {
 
-  public String getID() {
-    return id;
-  }
+        this.slot = slot;
+        this.id = id;
+        this.itemStack = itemStack;
+        this.inventoryName = inventoryName;
 
-  public ItemStack getItemStack() {
-    return itemStack;
-  }
+    }
 
-  public String getInventoryName() {
-    return inventoryName;
-  }
+    public int getSlot() {
 
-  /**
-   * Called when item is clicked within Options Menu inventory
-   *
-   * @param e passed InventoryClickEvent from Options Menu
-   */
-  public void onClick(InventoryClickEvent e) {
-  }
+        return slot;
+
+    }
+
+    public void setSlot(int slot) {
+
+        this.slot = slot;
+
+    }
+
+    public String getID() {
+
+        return id;
+
+    }
+
+    public ItemStack getItemStack() {
+
+        return itemStack;
+
+    }
+
+    public String getInventoryName() {
+
+        return inventoryName;
+
+    }
+
+    /**
+     * Called when item is clicked within Options Menu inventory
+     *
+     * @param e passed InventoryClickEvent from Options Menu
+     */
+    public void onClick(InventoryClickEvent e) {
+
+    }
+
 }

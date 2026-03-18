@@ -22,7 +22,6 @@ package plugily.projects.buildbattle.handlers.menu.registry;
 
 import org.bukkit.Material;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -33,68 +32,83 @@ import plugily.projects.buildbattle.handlers.menu.MenuOption;
 import plugily.projects.buildbattle.handlers.menu.OptionsRegistry;
 import plugily.projects.minigamesbox.classic.handlers.language.MessageBuilder;
 import plugily.projects.minigamesbox.classic.utils.helper.ItemBuilder;
-import plugily.projects.minigamesbox.classic.utils.version.ServerVersion;
 import plugily.projects.minigamesbox.classic.utils.version.xseries.XEntityType;
 import plugily.projects.minigamesbox.classic.utils.version.xseries.XMaterial;
 
 /**
  * @author Plajer
- * <p>
- * Created at 23.12.2018
+ *         <p>
+ *         Created at 23.12.2018
  */
 public class FloorChangeOption {
 
-  public FloorChangeOption(OptionsRegistry registry) {
-    registry.registerOption(new MenuOption(14, "FLOOR", new ItemBuilder(XMaterial.OAK_LOG.parseItem())
-        .name(new MessageBuilder("MENU_OPTION_CONTENT_FLOOR_ITEM_NAME").asKey().build())
-        .lore(new MessageBuilder("MENU_OPTION_CONTENT_FLOOR_ITEM_LORE").asKey().build())
-        .build()) {
-      @Override
-      public void onClick(InventoryClickEvent event) {
-        ItemStack itemStack = event.getCursor();
-        if (itemStack == null)
-          return;
+    public FloorChangeOption(OptionsRegistry registry) {
 
-        HumanEntity humanEntity = event.getWhoClicked();
+        registry.registerOption(new MenuOption(14, "FLOOR",
+                new ItemBuilder(XMaterial.OAK_LOG.parseItem())
+                        .name(new MessageBuilder("MENU_OPTION_CONTENT_FLOOR_ITEM_NAME").asKey().build())
+                        .lore(new MessageBuilder("MENU_OPTION_CONTENT_FLOOR_ITEM_LORE").asKey().build()).build())
+        {
 
-        if(!(humanEntity instanceof Player))
-          return;
+            @Override
+            public void onClick(InventoryClickEvent event) {
 
-        Player player = (Player) humanEntity;
-        BaseArena arena = registry.getPlugin().getArenaRegistry().getArena(player);
-        if(arena == null) {
-          return;
-        }
+                ItemStack itemStack = event.getCursor();
+                if (itemStack == null)
+                    return;
 
-        Material material = itemStack.getType();
-        if(material != XMaterial.WATER_BUCKET.parseMaterial() && material != XMaterial.LAVA_BUCKET.parseMaterial()
-            && !(material.isBlock() && material.isSolid() && material.isOccluding())) {
-          new MessageBuilder("IN_GAME_MESSAGES_PLOT_PERMISSION_FLOOR_ITEM").asKey().player(player).sendPlayer();
-          return;
-        }
+                HumanEntity humanEntity = event.getWhoClicked();
 
-        if(registry.getPlugin().getBlacklistManager().getFloorList().contains(material)) {
-          new MessageBuilder("IN_GAME_MESSAGES_PLOT_PERMISSION_FLOOR_ITEM").asKey().player(player).sendPlayer();
-          return;
-        }
+                if (!(humanEntity instanceof Player))
+                    return;
 
-        Plot plot = arena.getPlotManager().getPlot(player);
-        if (plot == null)
-          return;
+                Player player = (Player) humanEntity;
+                BaseArena arena = registry.getPlugin().getArenaRegistry().getArena(player);
+                if (arena == null) {
 
-        plot.changeFloor(material, XMaterial.matchXMaterial(itemStack).getData());
-        new MessageBuilder("MENU_OPTION_CONTENT_FLOOR_CHANGED").asKey().player(player).sendPlayer();
+                    return;
 
-        itemStack.setAmount(0);
-        itemStack.setType(Material.AIR);
-        event.getCurrentItem().setType(Material.AIR);
-        player.closeInventory();
+                }
 
-        player.getNearbyEntities(5, 5, 5).stream().filter(entity -> entity.getType() == XEntityType.ITEM.get())
-                .forEach(Entity::remove);
+                Material material = itemStack.getType();
+                if (material != XMaterial.WATER_BUCKET.parseMaterial()
+                        && material != XMaterial.LAVA_BUCKET.parseMaterial()
+                        && !(material.isBlock() && material.isSolid() && material.isOccluding()))
+                {
 
-      }
-    });
-  }
+                    new MessageBuilder("IN_GAME_MESSAGES_PLOT_PERMISSION_FLOOR_ITEM").asKey().player(player)
+                            .sendPlayer();
+                    return;
+
+                }
+
+                if (registry.getPlugin().getBlacklistManager().getFloorList().contains(material)) {
+
+                    new MessageBuilder("IN_GAME_MESSAGES_PLOT_PERMISSION_FLOOR_ITEM").asKey().player(player)
+                            .sendPlayer();
+                    return;
+
+                }
+
+                Plot plot = arena.getPlotManager().getPlot(player);
+                if (plot == null)
+                    return;
+
+                plot.changeFloor(material, XMaterial.matchXMaterial(itemStack).getData());
+                new MessageBuilder("MENU_OPTION_CONTENT_FLOOR_CHANGED").asKey().player(player).sendPlayer();
+
+                itemStack.setAmount(0);
+                itemStack.setType(Material.AIR);
+                event.getCurrentItem().setType(Material.AIR);
+                player.closeInventory();
+
+                player.getNearbyEntities(5, 5, 5).stream().filter(entity -> entity.getType() == XEntityType.ITEM.get())
+                        .forEach(Entity::remove);
+
+            }
+
+        });
+
+    }
 
 }

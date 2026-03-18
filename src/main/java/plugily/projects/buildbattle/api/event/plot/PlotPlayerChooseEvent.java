@@ -29,42 +29,57 @@ import plugily.projects.minigamesbox.api.events.PlugilyEvent;
 
 public class PlotPlayerChooseEvent extends PlugilyEvent implements Cancellable {
 
-  private static final HandlerList handlers = new HandlerList();
-  private final Player player;
-  private final Plot plot;
-  private boolean isCancelled;
+    private static final HandlerList handlers = new HandlerList();
+    private final Player player;
+    private final Plot plot;
+    private boolean isCancelled;
 
-  public PlotPlayerChooseEvent(Player player, Plot plot, BaseArena baseArena) {
-    super(baseArena);
-    this.player = player;
-    this.plot = plot;
-    this.isCancelled = false;
-  }
+    public PlotPlayerChooseEvent(Player player, Plot plot, BaseArena baseArena) {
 
-  public static HandlerList getHandlerList() {
-    return handlers;
-  }
+        super(baseArena);
+        this.player = player;
+        this.plot = plot;
+        this.isCancelled = false;
 
-  public Player getPlayer() {
-    return player;
-  }
+    }
 
-  public Plot getPlot() {
-    return plot;
-  }
+    public static HandlerList getHandlerList() {
 
-  @Override
-  public boolean isCancelled() {
-    return this.isCancelled;
-  }
+        return handlers;
 
-  @Override
-  public void setCancelled(boolean cancelled) {
-    this.isCancelled = cancelled;
-  }
+    }
 
-  @Override
-  public HandlerList getHandlers() {
-    return handlers;
-  }
+    public Player getPlayer() {
+
+        return player;
+
+    }
+
+    public Plot getPlot() {
+
+        return plot;
+
+    }
+
+    @Override
+    public boolean isCancelled() {
+
+        return this.isCancelled;
+
+    }
+
+    @Override
+    public void setCancelled(boolean cancelled) {
+
+        this.isCancelled = cancelled;
+
+    }
+
+    @Override
+    public HandlerList getHandlers() {
+
+        return handlers;
+
+    }
+
 }

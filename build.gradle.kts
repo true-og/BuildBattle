@@ -21,10 +21,9 @@ java {
     }
 }
 
-kotlin { jvmToolchain(17) }
-
 /* ----------------------------- Metadata ------------------------------ */
 group = "plugily.projects"
+
 version = "5.1.3"
 
 description = "BuildBattle" // Declare plugin version (will be in .jar).
@@ -57,12 +56,8 @@ dependencies {
     compileOnly("net.citizensnpcs:citizensapi:2.0.26-SNAPSHOT") {
         exclude(group = "ch.ethz.globis.phtree", module = "phtree")
     }
-    implementation("plugily.projects:MiniGamesBox-Classic:1.4.5") {
-        attributes { attribute(kotlinAttribute, true) }
-    }
+    implementation("plugily.projects:MiniGamesBox-Classic:1.4.5") { attributes { attribute(kotlinAttribute, true) } }
 }
-
-apply(from = "eclipse.gradle.kts") // Import eclipse classpath support script.
 
 /* ---------------------- Reproducible jars ---------------------------- */
 tasks.withType<AbstractArchiveTask>().configureEach { // Ensure reproducible .jars

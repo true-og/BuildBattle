@@ -33,71 +33,107 @@ import java.util.Map;
 
 /**
  * @author Plajer
- * <p>
- * Created at 08.07.2018
+ *         <p>
+ *         Created at 08.07.2018
  */
 public class VotePoll {
 
-  private final BuildArena arena;
-  private final Map<String, Integer> votedThemes = new LinkedHashMap<>();
-  private final Map<Player, String> playerVote = new HashMap<>();
-  private static final Main plugin = JavaPlugin.getPlugin(Main.class);
+    private final BuildArena arena;
+    private final Map<String, Integer> votedThemes = new LinkedHashMap<>();
+    private final Map<Player, String> playerVote = new HashMap<>();
+    private static final Main plugin = JavaPlugin.getPlugin(Main.class);
 
-  public VotePoll(BuildArena arena, List<String> votedThemes) {
-    this.arena = arena;
-    for(String theme : votedThemes) {
-      this.votedThemes.put(theme, 0);
+    public VotePoll(BuildArena arena, List<String> votedThemes) {
+
+        this.arena = arena;
+        for (String theme : votedThemes) {
+
+            this.votedThemes.put(theme, 0);
+
+        }
+
     }
-  }
 
-  public BuildArena getArena() {
-    return arena;
-  }
+    public BuildArena getArena() {
 
-  public Map<String, Integer> getVotedThemes() {
-    return votedThemes;
-  }
+        return arena;
 
-  public int getVoteAmount(String theme) {
-    return votedThemes.getOrDefault(theme, 0);
-  }
-
-  public boolean addVote(Player player, String theme) {
-    String playerVoteTheme = playerVote.get(player);
-    if(playerVoteTheme != null) {
-      if(playerVoteTheme.equals(theme)) {
-        return false;
-      }
-      votedThemes.put(playerVoteTheme, votedThemes.get(playerVoteTheme) - 1);
-    } else {
-      plugin.getRewardsHandler().performReward(player, arena, plugin.getRewardsHandler().getRewardType("VOTE"), -1);
     }
-    votedThemes.put(theme, votedThemes.getOrDefault(theme, 0) + 1);
-    playerVote.put(player, theme);
-    return true;
-  }
 
-  public Map<Player, String> getPlayerVote() {
-    return playerVote;
-  }
+    public Map<String, Integer> getVotedThemes() {
 
-  public String getVotedTheme() {
-    Object[] themes = SortUtils.sortByValue(votedThemes).keySet().toArray();
-    return themes.length != 0 ? (String) themes[themes.length - 1] : "";
-  }
+        return votedThemes;
 
-  public String getThemeByPosition(int position) {
-    if(position % 9 != 0) {
-      return "Incompatible operation";
     }
-    int i = 1;
-    for(String theme : votedThemes.keySet()) {
-      if(position / 9 == i) {
-        return theme;
-      }
-      i++;
+
+    public int getVoteAmount(String theme) {
+
+        return votedThemes.getOrDefault(theme, 0);
+
     }
-    return "none";
-  }
+
+    public boolean addVote(Player player, String theme) {
+
+        String playerVoteTheme = playerVote.get(player);
+        if (playerVoteTheme != null) {
+
+            if (playerVoteTheme.equals(theme)) {
+
+                return false;
+
+            }
+
+            votedThemes.put(playerVoteTheme, votedThemes.get(playerVoteTheme) - 1);
+
+        } else {
+
+            plugin.getRewardsHandler().performReward(player, arena, plugin.getRewardsHandler().getRewardType("VOTE"),
+                    -1);
+
+        }
+
+        votedThemes.put(theme, votedThemes.getOrDefault(theme, 0) + 1);
+        playerVote.put(player, theme);
+        return true;
+
+    }
+
+    public Map<Player, String> getPlayerVote() {
+
+        return playerVote;
+
+    }
+
+    public String getVotedTheme() {
+
+        Object[] themes = SortUtils.sortByValue(votedThemes).keySet().toArray();
+        return themes.length != 0 ? (String) themes[themes.length - 1] : "";
+
+    }
+
+    public String getThemeByPosition(int position) {
+
+        if (position % 9 != 0) {
+
+            return "Incompatible operation";
+
+        }
+
+        int i = 1;
+        for (String theme : votedThemes.keySet()) {
+
+            if (position / 9 == i) {
+
+                return theme;
+
+            }
+
+            i++;
+
+        }
+
+        return "none";
+
+    }
 
 }

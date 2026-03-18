@@ -35,44 +35,58 @@ import java.util.Set;
 
 /**
  * @author Plajer
- * <p>
- * Created at 03.02.2019
+ *         <p>
+ *         Created at 03.02.2019
  */
 public class BiomesRegistry {
 
-  private Inventory inventory;
-  private final Set<BiomeItem> biomes = new HashSet<>();
-  private final Main plugin;
+    private Inventory inventory;
+    private final Set<BiomeItem> biomes = new HashSet<>();
+    private final Main plugin;
 
-  public BiomesRegistry(OptionsRegistry registry) {
-    this.plugin = registry.getPlugin();
-    registerBiomes();
-  }
+    public BiomesRegistry(OptionsRegistry registry) {
 
-  private void registerBiomes() {
-    FileConfiguration config = ConfigUtils.getConfig(plugin, "biomes");
-    plugin.getDebugger().debug("Registering biomes!");
-    int i = 0;
-    for(String biome : config.getKeys(false)) {
-      if(i >= 52) {
-        plugin.getDebugger().debug("There are too many biomes to register! Menu can't hold any more!");
-        break;
-      }
-      java.util.List<String> lore = config.getStringList(biome + ".lore");
-      lore.replaceAll(line -> new MessageBuilder(line).build());
-      BiomeItem biomeItem = new BiomeItem(new ItemBuilder(XMaterial.matchXMaterial(config
-          .getString(biome + ".material-name", "bedrock").toUpperCase()).orElse(XMaterial.BEDROCK).parseItem())
-          .name(new MessageBuilder(config.getString(biome + ".displayname")).build())
-          .lore(lore)
-          .build(), config.getString(biome + ".permission"), XBiome.of(biome).orElse(XBiome.BADLANDS));
-      biomes.add(biomeItem);
-      i++;
+        this.plugin = registry.getPlugin();
+        registerBiomes();
+
     }
-    plugin.getDebugger().debug("Registered in total " + i + " biomes!");
-  }
 
-  public Set<BiomeItem> getBiomes() {
-    return biomes;
-  }
+    private void registerBiomes() {
+
+        FileConfiguration config = ConfigUtils.getConfig(plugin, "biomes");
+        plugin.getDebugger().debug("Registering biomes!");
+        int i = 0;
+        for (String biome : config.getKeys(false)) {
+
+            if (i >= 52) {
+
+                plugin.getDebugger().debug("There are too many biomes to register! Menu can't hold any more!");
+                break;
+
+            }
+
+            java.util.List<String> lore = config.getStringList(biome + ".lore");
+            lore.replaceAll(line -> new MessageBuilder(line).build());
+            BiomeItem biomeItem = new BiomeItem(
+                    new ItemBuilder(XMaterial
+                            .matchXMaterial(config.getString(biome + ".material-name", "bedrock").toUpperCase())
+                            .orElse(XMaterial.BEDROCK).parseItem())
+                            .name(new MessageBuilder(config.getString(biome + ".displayname")).build()).lore(lore)
+                            .build(),
+                    config.getString(biome + ".permission"), XBiome.of(biome).orElse(XBiome.BADLANDS));
+            biomes.add(biomeItem);
+            i++;
+
+        }
+
+        plugin.getDebugger().debug("Registered in total " + i + " biomes!");
+
+    }
+
+    public Set<BiomeItem> getBiomes() {
+
+        return biomes;
+
+    }
 
 }

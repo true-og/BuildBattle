@@ -27,7 +27,6 @@ import plugily.projects.buildbattle.arena.BaseArena;
 import plugily.projects.buildbattle.arena.managers.plots.Plot;
 import plugily.projects.minigamesbox.api.arena.IPluginArena;
 import plugily.projects.minigamesbox.classic.PluginMain;
-import plugily.projects.minigamesbox.classic.arena.PluginArena;
 import plugily.projects.minigamesbox.classic.utils.version.VersionUtils;
 
 import java.util.HashSet;
@@ -38,41 +37,65 @@ import java.util.Map.Entry;
  */
 public class ParticleRefreshScheduler {
 
-  private BukkitTask task;
+    private BukkitTask task;
 
-  public ParticleRefreshScheduler(PluginMain plugin) {
-    int particleRefreshTick = plugin.getConfig().getInt("Particle.Refresh-Rate", 10);
+    public ParticleRefreshScheduler(PluginMain plugin) {
 
-    if(particleRefreshTick < 0) {
-      particleRefreshTick = 20;
-    }
+        int particleRefreshTick = plugin.getConfig().getInt("Particle.Refresh-Rate", 10);
 
-    int amountParticle = plugin.getConfig().getInt("Particle.Effects", 20);
+        if (particleRefreshTick < 0) {
 
-    if(amountParticle < 0) {
-      amountParticle = 20;
-    }
+            particleRefreshTick = 20;
 
-    final int particleAmount = amountParticle;
-
-    task = Bukkit.getScheduler().runTaskTimer(plugin, () -> {
-      for(IPluginArena arena : plugin.getArenaRegistry().getArenas()) {
-        if(arena instanceof BaseArena && !arena.getPlayers().isEmpty()) {
-          for(Plot buildPlot : ((BaseArena) arena).getPlotManager().getPlots()) {
-            if(!buildPlot.getMembers().isEmpty()) {
-              for(Entry<Location, String> map : buildPlot.getParticles().entrySet()) {
-                VersionUtils.sendParticles(map.getValue(), new HashSet<>(buildPlot.getMembers()), map.getKey(), particleAmount);
-              }
-            }
-          }
         }
-      }
-    }, 0, particleRefreshTick);
-  }
 
-  public void cancelTask() {
-    if(task != null) {
-      task.cancel();
+        int amountParticle = plugin.getConfig().getInt("Particle.Effects", 20);
+
+        if (amountParticle < 0) {
+
+            amountParticle = 20;
+
+        }
+
+        final int particleAmount = amountParticle;
+
+        task = Bukkit.getScheduler().runTaskTimer(plugin, () -> {
+
+            for (IPluginArena arena : plugin.getArenaRegistry().getArenas()) {
+
+                if (arena instanceof BaseArena && !arena.getPlayers().isEmpty()) {
+
+                    for (Plot buildPlot : ((BaseArena) arena).getPlotManager().getPlots()) {
+
+                        if (!buildPlot.getMembers().isEmpty()) {
+
+                            for (Entry<Location, String> map : buildPlot.getParticles().entrySet()) {
+
+                                VersionUtils.sendParticles(map.getValue(), new HashSet<>(buildPlot.getMembers()),
+                                        map.getKey(), particleAmount);
+
+                            }
+
+                        }
+
+                    }
+
+                }
+
+            }
+
+        }, 0, particleRefreshTick);
+
     }
-  }
+
+    public void cancelTask() {
+
+        if (task != null) {
+
+            task.cancel();
+
+        }
+
+    }
+
 }

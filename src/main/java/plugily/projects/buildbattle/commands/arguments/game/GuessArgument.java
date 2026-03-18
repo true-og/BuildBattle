@@ -33,53 +33,75 @@ import java.util.Arrays;
 
 /**
  * @author Tigerpanzer_02
- * <p>
- * Created at 30.05.2021
+ *         <p>
+ *         Created at 30.05.2021
  */
 public class GuessArgument {
 
-  public GuessArgument(ArgumentsRegistry registry) {
-    registry.mapArgument("buildbattle", new CommandArgument("guess", "", CommandArgument.ExecutorType.PLAYER) {
-      @Override
-      public void execute(CommandSender sender, String[] args) {
-        if(args.length < 2) {
-          new MessageBuilder("COMMANDS_WRONG_USAGE").asKey().value("/bb guess <word>").send(sender);
-          return;
-        }
+    public GuessArgument(ArgumentsRegistry registry) {
 
-        Player player = (Player) sender;
-        BaseArena arena = (BaseArena) registry.getPlugin().getArenaRegistry().getArena(player);
+        registry.mapArgument("buildbattle", new CommandArgument("guess", "", CommandArgument.ExecutorType.PLAYER) {
 
-        if(!(arena instanceof GuessArena) || arena.getArenaState() != IArenaState.IN_GAME) {
-          new MessageBuilder("COMMANDS_NOT_PLAYING").asKey().player(player).sendPlayer();
-          return;
-        }
+            @Override
+            public void execute(CommandSender sender, String[] args) {
 
-        GuessArena gameArena = (GuessArena) arena;
+                if (args.length < 2) {
 
-        if(gameArena.getArenaInGameState() != BaseArena.ArenaInGameState.BUILD_TIME) {
-          new MessageBuilder("COMMANDS_NOT_PLAYING").asKey().player(player).sendPlayer();
-          return;
-        }
+                    new MessageBuilder("COMMANDS_WRONG_USAGE").asKey().value("/bb guess <word>").send(sender);
+                    return;
 
-        if(gameArena.getWhoGuessed().contains(player)) {
-          new MessageBuilder("IN_GAME_MESSAGES_PLOT_GTB_THEME_GUESS_CANT_TALK").asKey().arena(gameArena).player(player).sendPlayer();
-          return;
-        }
+                }
 
-        if(gameArena.getCurrentBuilders().contains(player)) {
-          new MessageBuilder("IN_GAME_MESSAGES_PLOT_GTB_THEME_GUESS_BUILDER").asKey().arena(gameArena).player(player).sendPlayer();
-          return;
-        }
+                Player player = (Player) sender;
+                BaseArena arena = (BaseArena) registry.getPlugin().getArenaRegistry().getArena(player);
 
-        if(gameArena.getCurrentBBTheme() == null || gameArena.getCurrentBBTheme().getThemes().stream().noneMatch(theme -> theme.equalsIgnoreCase(Arrays.toString(args).split(" ", 2)[1].replace(",", "").replace("]", "")))) {
-          return;
-        }
+                if (!(arena instanceof GuessArena) || arena.getArenaState() != IArenaState.IN_GAME) {
 
-        gameArena.broadcastPlayerGuessed(player);
-      }
-    });
-  }
+                    new MessageBuilder("COMMANDS_NOT_PLAYING").asKey().player(player).sendPlayer();
+                    return;
 
+                }
+
+                GuessArena gameArena = (GuessArena) arena;
+
+                if (gameArena.getArenaInGameState() != BaseArena.ArenaInGameState.BUILD_TIME) {
+
+                    new MessageBuilder("COMMANDS_NOT_PLAYING").asKey().player(player).sendPlayer();
+                    return;
+
+                }
+
+                if (gameArena.getWhoGuessed().contains(player)) {
+
+                    new MessageBuilder("IN_GAME_MESSAGES_PLOT_GTB_THEME_GUESS_CANT_TALK").asKey().arena(gameArena)
+                            .player(player).sendPlayer();
+                    return;
+
+                }
+
+                if (gameArena.getCurrentBuilders().contains(player)) {
+
+                    new MessageBuilder("IN_GAME_MESSAGES_PLOT_GTB_THEME_GUESS_BUILDER").asKey().arena(gameArena)
+                            .player(player).sendPlayer();
+                    return;
+
+                }
+
+                if (gameArena.getCurrentBBTheme() == null
+                        || gameArena.getCurrentBBTheme().getThemes().stream().noneMatch(theme -> theme.equalsIgnoreCase(
+                                Arrays.toString(args).split(" ", 2)[1].replace(",", "").replace("]", ""))))
+                {
+
+                    return;
+
+                }
+
+                gameArena.broadcastPlayerGuessed(player);
+
+            }
+
+        });
+
+    }
 
 }

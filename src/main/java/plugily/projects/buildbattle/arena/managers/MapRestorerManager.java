@@ -26,33 +26,46 @@ import plugily.projects.minigamesbox.classic.arena.managers.PluginMapRestorerMan
 
 public class MapRestorerManager extends PluginMapRestorerManager {
 
-  public final BaseArena arena;
+    public final BaseArena arena;
 
-  public MapRestorerManager(BaseArena arena) {
-    super(arena);
-    this.arena = arena;
-  }
+    public MapRestorerManager(BaseArena arena) {
 
-  @Override
-  public void fullyRestoreArena() {
-    arena.cleanUpArena();
-    clearPlots();
-    cancelParticleRefresh();
-    arena.setArenaOption("IN_PLOT_CHECKER", 0);
-    arena.setArenaInGameState(BaseArena.ArenaInGameState.NONE);
-    super.fullyRestoreArena();
-  }
+        super(arena);
+        this.arena = arena;
 
-  private void clearPlots() {
-    for(Plot plot : arena.getPlotManager().getPlots()) {
-      plot.fullyResetPlot();
-      plot.getMembers().clear();
     }
-  }
 
-  private void cancelParticleRefresh() {
-    if(arena.getParticleRefreshScheduler() != null) {
-      arena.getParticleRefreshScheduler().cancelTask();
+    @Override
+    public void fullyRestoreArena() {
+
+        arena.cleanUpArena();
+        clearPlots();
+        cancelParticleRefresh();
+        arena.setArenaOption("IN_PLOT_CHECKER", 0);
+        arena.setArenaInGameState(BaseArena.ArenaInGameState.NONE);
+        super.fullyRestoreArena();
+
     }
-  }
+
+    private void clearPlots() {
+
+        for (Plot plot : arena.getPlotManager().getPlots()) {
+
+            plot.fullyResetPlot();
+            plot.getMembers().clear();
+
+        }
+
+    }
+
+    private void cancelParticleRefresh() {
+
+        if (arena.getParticleRefreshScheduler() != null) {
+
+            arena.getParticleRefreshScheduler().cancelTask();
+
+        }
+
+    }
+
 }

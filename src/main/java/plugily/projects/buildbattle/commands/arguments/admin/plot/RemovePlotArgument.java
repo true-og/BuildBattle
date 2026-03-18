@@ -32,41 +32,59 @@ import plugily.projects.minigamesbox.classic.utils.configuration.ConfigUtils;
 
 /**
  * @author Plajer
- * <p>
- * Created at 11.01.2019
+ *         <p>
+ *         Created at 11.01.2019
  */
 public class RemovePlotArgument {
 
-  public RemovePlotArgument(ArgumentsRegistry registry) {
-    registry.mapArgument("buildbattleadmin", new LabeledCommandArgument("removeplot", "buildbattle.admin.removeplot", CommandArgument.ExecutorType.PLAYER,
-        new LabelData("/bba removeplot &6<arena> <plot ID>", "/bba removeplot <arena> <plot ID>",
-            "&7Removes game plot of the arena (only in arenas.yml!)\n&6Permission: &7buildbattle.admin.removeplot")) {
-      @Override
-      public void execute(CommandSender sender, String[] args) {
-        if(args.length < 3) {
-          new MessageBuilder("COMMANDS_TYPE_ARENA_NAME").asKey().send(sender);
-          new MessageBuilder("COMMANDS_WRONG_USAGE").asKey().value("/bba removeplot <arena> <plot ID>").send(sender);
-          return;
-        }
+    public RemovePlotArgument(ArgumentsRegistry registry) {
 
-        BaseArena arena = (BaseArena) registry.getPlugin().getArenaRegistry().getArena(args[1]);
-        if(arena == null) {
-          new MessageBuilder("COMMANDS_NO_ARENA_LIKE_THAT").asKey().send(sender);
-          return;
-        }
+        registry.mapArgument("buildbattleadmin", new LabeledCommandArgument("removeplot",
+                "buildbattle.admin.removeplot", CommandArgument.ExecutorType.PLAYER,
+                new LabelData("/bba removeplot &6<arena> <plot ID>", "/bba removeplot <arena> <plot ID>",
+                        "&7Removes game plot of the arena (only in arenas.yml!)\n&6Permission: &7buildbattle.admin.removeplot"))
+        {
 
-        String plot = args[2];
-        FileConfiguration config = ConfigUtils.getConfig(registry.getPlugin(), "arenas");
+            @Override
+            public void execute(CommandSender sender, String[] args) {
 
-        if(config.contains("instances." + arena.getId() + ".plots." + plot)) {
-          config.set("instances." + arena.getId() + ".plots." + plot, null);
-          ConfigUtils.saveConfig(registry.getPlugin(), config, "arenas");
-          new MessageBuilder("&aPlot with ID &e" + plot + "&a removed from arena &e" + arena.getId()).send(sender);
-        } else {
-          new MessageBuilder("&cPlot with that ID doesn't exist!").send(sender);
-        }
-      }
-    });
-  }
+                if (args.length < 3) {
+
+                    new MessageBuilder("COMMANDS_TYPE_ARENA_NAME").asKey().send(sender);
+                    new MessageBuilder("COMMANDS_WRONG_USAGE").asKey().value("/bba removeplot <arena> <plot ID>")
+                            .send(sender);
+                    return;
+
+                }
+
+                BaseArena arena = (BaseArena) registry.getPlugin().getArenaRegistry().getArena(args[1]);
+                if (arena == null) {
+
+                    new MessageBuilder("COMMANDS_NO_ARENA_LIKE_THAT").asKey().send(sender);
+                    return;
+
+                }
+
+                String plot = args[2];
+                FileConfiguration config = ConfigUtils.getConfig(registry.getPlugin(), "arenas");
+
+                if (config.contains("instances." + arena.getId() + ".plots." + plot)) {
+
+                    config.set("instances." + arena.getId() + ".plots." + plot, null);
+                    ConfigUtils.saveConfig(registry.getPlugin(), config, "arenas");
+                    new MessageBuilder("&aPlot with ID &e" + plot + "&a removed from arena &e" + arena.getId())
+                            .send(sender);
+
+                } else {
+
+                    new MessageBuilder("&cPlot with that ID doesn't exist!").send(sender);
+
+                }
+
+            }
+
+        });
+
+    }
 
 }

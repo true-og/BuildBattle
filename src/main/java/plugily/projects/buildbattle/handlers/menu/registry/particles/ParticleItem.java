@@ -27,32 +27,44 @@ import org.bukkit.inventory.ItemStack;
  */
 public class ParticleItem {
 
-  private ItemStack itemStack;
-  private String effect;
-  private String permission;
+    private ItemStack itemStack;
+    private String effect;
+    private String permission;
 
-  public String getPermission() {
-    return permission;
-  }
+    public String getPermission() {
 
-  public void setPermission(String permission) {
-    this.permission = permission;
-  }
+        return permission;
 
-  public String getEffect() {
-    return effect;
-  }
+    }
 
-  public void setEffect(String effect) {
-    this.effect = effect;
-  }
+    public void setPermission(String permission) {
 
-  public ItemStack getItemStack() {
-    return itemStack;
-  }
+        this.permission = permission;
 
-  public void setItemStack(ItemStack itemStack) {
-    this.itemStack = itemStack;
-  }
+    }
+
+    public String getEffect() {
+
+        return effect;
+
+    }
+
+    public void setEffect(String effect) {
+
+        this.effect = effect;
+
+    }
+
+    public ItemStack getItemStack() {
+
+        return itemStack;
+
+    }
+
+    public void setItemStack(ItemStack itemStack) {
+
+        this.itemStack = itemStack;
+
+    }
 
 }

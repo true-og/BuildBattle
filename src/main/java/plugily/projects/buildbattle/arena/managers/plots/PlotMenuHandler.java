@@ -33,8 +33,6 @@ import plugily.projects.minigamesbox.classic.utils.helper.ItemBuilder;
 import plugily.projects.minigamesbox.classic.utils.items.HandlerItem;
 import plugily.projects.minigamesbox.classic.utils.version.VersionUtils;
 import plugily.projects.minigamesbox.classic.utils.version.xseries.XMaterial;
-import plugily.projects.minigamesbox.inventory.common.item.SimpleClickableItem;
-import plugily.projects.minigamesbox.inventory.normal.NormalFastInv;
 import plugily.projects.minigamesbox.inventory.utils.fastinv.InventoryScheme;
 import plugily.projects.minigamesbox.inventory.utils.fastinv.PaginatedFastInv;
 
@@ -47,122 +45,161 @@ import java.util.List;
 
 public final class PlotMenuHandler {
 
-  private final Main plugin;
-  private final ItemStack empty;
-  private final ItemStack waiting;
-  private final ItemStack full;
-  private final ItemStack inside;
-  private final SpecialItem baseItem;
+    private final Main plugin;
+    private final ItemStack empty;
+    private final ItemStack waiting;
+    private final ItemStack full;
+    private final ItemStack inside;
+    private final SpecialItem baseItem;
 
-  public PlotMenuHandler(Main plugin) {
-    this.plugin = plugin;
-    this.baseItem = plugin.getSpecialItemManager().getSpecialItem("PLOT_SELECTOR");
+    public PlotMenuHandler(Main plugin) {
 
-    empty = XMaterial.GREEN_WOOL.parseItem();
-    waiting = XMaterial.YELLOW_WOOL.parseItem();
-    full = XMaterial.RED_WOOL.parseItem();
-    inside = XMaterial.PINK_WOOL.parseItem();
-  }
+        this.plugin = plugin;
+        this.baseItem = plugin.getSpecialItemManager().getSpecialItem("PLOT_SELECTOR");
 
-  private ItemStack getItemStack(Plot plot, int maxPlotMembers, Player player) {
-    if(plot.getMembers().isEmpty()) {
-      return empty.clone();
+        empty = XMaterial.GREEN_WOOL.parseItem();
+        waiting = XMaterial.YELLOW_WOOL.parseItem();
+        full = XMaterial.RED_WOOL.parseItem();
+        inside = XMaterial.PINK_WOOL.parseItem();
+
     }
 
-    if(plot.getMembers().contains(player)) {
-      return inside.clone();
+    private ItemStack getItemStack(Plot plot, int maxPlotMembers, Player player) {
+
+        if (plot.getMembers().isEmpty()) {
+
+            return empty.clone();
+
+        }
+
+        if (plot.getMembers().contains(player)) {
+
+            return inside.clone();
+
+        }
+
+        if (plot.getMembersSize() == maxPlotMembers) {
+
+            return full.clone();
+
+        }
+
+        return waiting.clone();
+
     }
 
-    if(plot.getMembersSize() == maxPlotMembers) {
-      return full.clone();
+    public void createMenu(Player player, BaseArena arena) {
+
+        PaginatedFastInv gui = new PaginatedFastInv(27,
+                new MessageBuilder("IN_GAME_MESSAGES_PLOT_SELECTOR_MENU_NAME").asKey().build());
+        new InventoryScheme().mask(" 1111111 ").mask(" 1111111 ").bindPagination('1').apply(gui);
+
+        int plots = 0;
+        int arenaPlotMemberSize = arena.getArenaOption("PLOT_MEMBER_SIZE");
+
+        gui.previousPageItem(20,
+                p -> new ItemBuilder(XMaterial.ARROW.parseItem()).name("<- " + p + "/" + gui.lastPage()).build());
+        gui.nextPageItem(24,
+                p -> new ItemBuilder(XMaterial.ARROW.parseItem()).name(p + "/" + gui.lastPage() + " ->").build());
+
+        gui.setItem(22, new ItemBuilder(XMaterial.BARRIER.parseItem()).name("X").build(),
+                e -> e.getWhoClicked().closeInventory());
+
+        for (Plot plot : arena.getPlotManager().getPlots()) {
+
+            ItemStack itemStack = getItemStack(plot, arenaPlotMemberSize, player);
+            int plotMemberSize = plot.getMembersSize();
+
+            itemStack.setAmount(plotMemberSize == 0 ? 1 : plotMemberSize);
+
+            itemStack = new ItemBuilder(itemStack).lore(
+                    new MessageBuilder(plotMemberSize >= arenaPlotMemberSize ? "IN_GAME_MESSAGES_PLOT_SELECTOR_FULL"
+                            : "IN_GAME_MESSAGES_PLOT_SELECTOR_EMPTY").asKey().build())
+                    .build();
+
+            if (plotMemberSize != 0) {
+
+                List<String> players = new ArrayList<>(plotMemberSize);
+
+                for (Player plotMember : plot.getMembers()) {
+
+                    players.add("- " + plotMember.getName());
+
+                }
+
+                itemStack = new ItemBuilder(itemStack).lore(players).build();
+
+            }
+
+            if (plot.getMembers().contains(player)) {
+
+                itemStack = new ItemBuilder(itemStack)
+                        .lore(new MessageBuilder("IN_GAME_MESSAGES_PLOT_SELECTOR_INSIDE").asKey().build()).build();
+
+            }
+
+            itemStack = new ItemBuilder(itemStack)
+                    .name(new MessageBuilder("IN_GAME_MESSAGES_PLOT_SELECTOR_NAME").asKey().integer(plots).build())
+                    .build();
+
+            new HandlerItem(itemStack).addInteractHandler(event -> {
+
+                if (!(event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK)) {
+
+                    return;
+
+                }
+
+                if (!VersionUtils.getItemInHand(event.getPlayer()).equals(baseItem.getItemStack())) {
+
+                    return;
+
+                }
+
+                BaseArena baseArena = plugin.getArenaRegistry().getArena(event.getPlayer());
+                if (baseArena == null) {
+
+                    return;
+
+                }
+
+                event.setCancelled(true);
+                createMenu(event.getPlayer(), baseArena);
+
+            });
+
+            int finalPlots = plots;
+            gui.addContent(itemStack, event -> {
+
+                event.setCancelled(true);
+
+                if (!(event.isLeftClick() || event.isRightClick())) {
+
+                    return;
+
+                }
+
+                PlotPlayerChooseEvent plotChooseEvent = new PlotPlayerChooseEvent(player, plot, arena);
+                Bukkit.getPluginManager().callEvent(plotChooseEvent);
+
+                if (plotChooseEvent.isCancelled() || !plot.addMember(player, arena, false)) {
+
+                    return;
+
+                }
+
+                new MessageBuilder("IN_GAME_MESSAGES_PLOT_SELECTOR_PLOT_CHOOSE").asKey().player(player)
+                        .integer(finalPlots).sendPlayer();
+                event.getWhoClicked().closeInventory();
+
+            });
+
+            plots++;
+
+        }
+
+        gui.open(player);
+
     }
-
-    return waiting.clone();
-  }
-
-  public void createMenu(Player player, BaseArena arena) {
-    PaginatedFastInv gui = new PaginatedFastInv(27, new MessageBuilder("IN_GAME_MESSAGES_PLOT_SELECTOR_MENU_NAME").asKey().build());
-    new InventoryScheme()
-        .mask(" 1111111 ")
-        .mask(" 1111111 ")
-        .bindPagination('1').apply(gui);
-
-
-    int plots = 0;
-    int arenaPlotMemberSize = arena.getArenaOption("PLOT_MEMBER_SIZE");
-
-    gui.previousPageItem(20, p -> new ItemBuilder(XMaterial.ARROW.parseItem()).name("<- " + p + "/" + gui.lastPage()).build());
-    gui.nextPageItem(24, p -> new ItemBuilder(XMaterial.ARROW.parseItem()).name(p + "/" + gui.lastPage() + " ->").build());
-
-    gui.setItem(22, new ItemBuilder(XMaterial.BARRIER.parseItem()).name("X").build(),
-        e -> e.getWhoClicked().closeInventory());
-
-    for(Plot plot : arena.getPlotManager().getPlots()) {
-      ItemStack itemStack = getItemStack(plot, arenaPlotMemberSize, player);
-      int plotMemberSize = plot.getMembersSize();
-
-      itemStack.setAmount(plotMemberSize == 0 ? 1 : plotMemberSize);
-
-      itemStack = new ItemBuilder(itemStack).lore(new MessageBuilder(plotMemberSize >= arenaPlotMemberSize ? "IN_GAME_MESSAGES_PLOT_SELECTOR_FULL"
-          : "IN_GAME_MESSAGES_PLOT_SELECTOR_EMPTY").asKey().build()).build();
-
-      if(plotMemberSize != 0) {
-        List<String> players = new ArrayList<>(plotMemberSize);
-
-        for(Player plotMember : plot.getMembers()) {
-          players.add("- " + plotMember.getName());
-        }
-
-        itemStack = new ItemBuilder(itemStack).lore(players).build();
-      }
-
-      if(plot.getMembers().contains(player)) {
-        itemStack = new ItemBuilder(itemStack).lore(new MessageBuilder("IN_GAME_MESSAGES_PLOT_SELECTOR_INSIDE").asKey().build()).build();
-      }
-
-      itemStack = new ItemBuilder(itemStack).name(new MessageBuilder("IN_GAME_MESSAGES_PLOT_SELECTOR_NAME").asKey().integer(plots).build()).build();
-
-      new HandlerItem(itemStack).addInteractHandler(event -> {
-        if(!(event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK)) {
-          return;
-        }
-
-        if(!VersionUtils.getItemInHand(event.getPlayer()).equals(baseItem.getItemStack())) {
-          return;
-        }
-
-        BaseArena baseArena = plugin.getArenaRegistry().getArena(event.getPlayer());
-        if(baseArena == null) {
-          return;
-        }
-
-        event.setCancelled(true);
-        createMenu(event.getPlayer(), baseArena);
-      });
-
-      int finalPlots = plots;
-      gui.addContent(itemStack, event -> {
-        event.setCancelled(true);
-
-        if(!(event.isLeftClick() || event.isRightClick())) {
-          return;
-        }
-
-        PlotPlayerChooseEvent plotChooseEvent = new PlotPlayerChooseEvent(player, plot, arena);
-        Bukkit.getPluginManager().callEvent(plotChooseEvent);
-
-        if(plotChooseEvent.isCancelled() || !plot.addMember(player, arena, false)) {
-          return;
-        }
-
-        new MessageBuilder("IN_GAME_MESSAGES_PLOT_SELECTOR_PLOT_CHOOSE").asKey().player(player).integer(finalPlots).sendPlayer();
-        event.getWhoClicked().closeInventory();
-      });
-
-      plots++;
-    }
-
-    gui.open(player);
-  }
 
 }

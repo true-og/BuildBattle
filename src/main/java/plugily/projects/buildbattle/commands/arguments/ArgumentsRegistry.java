@@ -20,7 +20,6 @@
 
 package plugily.projects.buildbattle.commands.arguments;
 
-import org.checkerframework.checker.units.qual.Force;
 import plugily.projects.buildbattle.Main;
 import plugily.projects.buildbattle.arena.BaseArena;
 import plugily.projects.buildbattle.arena.BuildArena;
@@ -43,40 +42,50 @@ import java.util.stream.Collectors;
 
 /**
  * @author Plajer
- * <p>Created at 24.11.2018
+ *         <p>
+ *         Created at 24.11.2018
  */
 public class ArgumentsRegistry extends PluginArgumentsRegistry {
 
-  public ArgumentsRegistry(Main plugin) {
-    super(plugin);
-    new AddNpcArgument(this);
-    new ForcePlayArgument(this);
-    new SetThemeArgument(this);
-    new AddPlotArgument(this);
-    new RemovePlotArgument(this);
-    new SelectPlotArgument(this);
-    new MenuArgument(this);
-    new GuessArgument(this);
-    new ThemeArgument(this);
-  }
+    public ArgumentsRegistry(Main plugin) {
 
-  @Override
-  public List<IPluginArena> getSpecificFilteredArenas(List<IPluginArena> arenas, String filter) {
-    switch(filter.toLowerCase(Locale.ENGLISH)) {
-      case "gtb":
-      case "guessthebuild":
-      case "guess_the_build":
-        return arenas.stream().filter(GuessArena.class::isInstance).collect(Collectors.toList());
-      case "team":
-        return arenas.stream().filter(BuildArena.class::isInstance).filter(arena -> ((BuildArena) arena).getArenaType().equals(BaseArena.ArenaType.TEAM)).collect(Collectors.toList());
-      case "classic":
-      case "solo":
-        return arenas.stream().filter(BuildArena.class::isInstance).filter(arena -> ((BuildArena) arena).getArenaType().equals(BaseArena.ArenaType.SOLO)).collect(Collectors.toList());
-      case "build":
-        default:
-        return arenas.stream().filter(BuildArena.class::isInstance).collect(Collectors.toList());
+        super(plugin);
+        new AddNpcArgument(this);
+        new ForcePlayArgument(this);
+        new SetThemeArgument(this);
+        new AddPlotArgument(this);
+        new RemovePlotArgument(this);
+        new SelectPlotArgument(this);
+        new MenuArgument(this);
+        new GuessArgument(this);
+        new ThemeArgument(this);
+
     }
-  }
 
-  
+    @Override
+    public List<IPluginArena> getSpecificFilteredArenas(List<IPluginArena> arenas, String filter) {
+
+        switch (filter.toLowerCase(Locale.ENGLISH)) {
+
+            case "gtb":
+            case "guessthebuild":
+            case "guess_the_build":
+                return arenas.stream().filter(GuessArena.class::isInstance).collect(Collectors.toList());
+            case "team":
+                return arenas.stream().filter(BuildArena.class::isInstance)
+                        .filter(arena -> ((BuildArena) arena).getArenaType().equals(BaseArena.ArenaType.TEAM))
+                        .collect(Collectors.toList());
+            case "classic":
+            case "solo":
+                return arenas.stream().filter(BuildArena.class::isInstance)
+                        .filter(arena -> ((BuildArena) arena).getArenaType().equals(BaseArena.ArenaType.SOLO))
+                        .collect(Collectors.toList());
+            case "build":
+            default:
+                return arenas.stream().filter(BuildArena.class::isInstance).collect(Collectors.toList());
+
+        }
+
+    }
+
 }

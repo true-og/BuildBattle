@@ -30,16 +30,22 @@ import java.util.Arrays;
 
 /**
  * @author Tigerpanzer_02
- * <p>
- * Created at 01.07.2022
+ *         <p>
+ *         Created at 01.07.2022
  */
 public class SwitchCategory extends PluginSwitchCategory {
-  @Override
-  public void addItems(NormalFastInv gui) {
-    super.addItems(gui);
-    SwitchItem gameType = new SwitchItem(getSetupInventory(), new ItemBuilder(XMaterial.CLOCK.parseMaterial()), "Game Type", "Set game mode of build battle arena. \n CLASSIC - default game mode \n GUESS_THE_BUILD - arcade guessing mode", "gametype", Arrays.asList("classic", "guess_the_build"));
-    gui.setItem((getInventoryLine()*9)+1, gameType);
-    getItemList().add(gameType);
-  }
+
+    @Override
+    public void addItems(NormalFastInv gui) {
+
+        super.addItems(gui);
+        SwitchItem gameType = new SwitchItem(getSetupInventory(), new ItemBuilder(XMaterial.CLOCK.parseMaterial()),
+                "Game Type",
+                "Set game mode of build battle arena. \n CLASSIC - default game mode \n GUESS_THE_BUILD - arcade guessing mode",
+                "gametype", Arrays.asList("classic", "guess_the_build"));
+        gui.setItem((getInventoryLine() * 9) + 1, gameType);
+        getItemList().add(gameType);
+
+    }
 
 }

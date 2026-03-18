@@ -38,139 +38,175 @@ import java.util.Optional;
 
 /**
  * @author Tigerpanzer_02
- * <p>
- * Created at 19.06.2022
+ *         <p>
+ *         Created at 19.06.2022
  */
 public class ThemeManager {
 
-  private final Main plugin;
-  private final FileConfiguration themesConfig;
+    private final Main plugin;
+    private final FileConfiguration themesConfig;
 
-  private final Map<GameThemes, List<String>> gameThemes = new HashMap<>();
-  private final List<String> blacklistedNames;
+    private final Map<GameThemes, List<String>> gameThemes = new HashMap<>();
+    private final List<String> blacklistedNames;
 
-  public final List<String> classicThemes, teamsThemes, GTBThemesEasy, GTBThemesMedium, GTBThemesHard;
+    public final List<String> classicThemes, teamsThemes, GTBThemesEasy, GTBThemesMedium, GTBThemesHard;
 
-  public ThemeManager(Main plugin) {
-    this.plugin = plugin;
+    public ThemeManager(Main plugin) {
 
-    themesConfig = ConfigUtils.getConfig(plugin, "themes");
-    blacklistedNames = themesConfig.getStringList("Blacklisted");
+        this.plugin = plugin;
 
-    classicThemes = themesConfig.getStringList("Themes.Classic");
-    teamsThemes = themesConfig.getStringList("Themes.Teams");
-    GTBThemesEasy = themesConfig.getStringList("Themes.Guess-The-Build.Easy");
-    GTBThemesMedium = themesConfig.getStringList("Themes.Guess-The-Build.Medium");
-    GTBThemesHard = themesConfig.getStringList("Themes.Guess-The-Build.Hard");
+        themesConfig = ConfigUtils.getConfig(plugin, "themes");
+        blacklistedNames = themesConfig.getStringList("Blacklisted");
 
-    loadThemes(false);
+        classicThemes = themesConfig.getStringList("Themes.Classic");
+        teamsThemes = themesConfig.getStringList("Themes.Teams");
+        GTBThemesEasy = themesConfig.getStringList("Themes.Guess-The-Build.Easy");
+        GTBThemesMedium = themesConfig.getStringList("Themes.Guess-The-Build.Medium");
+        GTBThemesHard = themesConfig.getStringList("Themes.Guess-The-Build.Hard");
 
-    plugin.getDebugger().debug("Themes loaded: " + gameThemes);
-  }
+        loadThemes(false);
 
-  public void saveThemesToConfig() {
-    themesConfig.set("Themes.Classic", classicThemes);
-    themesConfig.set("Themes.Teams", teamsThemes);
-    themesConfig.set("Themes.Guess-The-Build.Easy", GTBThemesEasy);
-    themesConfig.set("Themes.Guess-The-Build.Medium", GTBThemesMedium);
-    themesConfig.set("Themes.Guess-The-Build.Hard", GTBThemesHard);
+        plugin.getDebugger().debug("Themes loaded: " + gameThemes);
 
-    ConfigUtils.saveConfig(plugin, themesConfig, "themes");
-  }
-
-  public void loadThemes(boolean ignoreHolidays) {
-    // Remove all colours from theme names
-    classicThemes.replaceAll(ChatColor::stripColor);
-    teamsThemes.replaceAll(ChatColor::stripColor);
-    GTBThemesEasy.replaceAll(ChatColor::stripColor);
-    GTBThemesMedium.replaceAll(ChatColor::stripColor);
-    GTBThemesHard.replaceAll(ChatColor::stripColor);
-
-    if(!ignoreHolidays && !plugin.getHolidayManager().getEnabledHolidays().isEmpty()) {
-      loadSpecialThemes();
-      return;
     }
 
-    gameThemes.put(GameThemes.SOLO, Collections.unmodifiableList(classicThemes));
-    gameThemes.put(GameThemes.TEAM, Collections.unmodifiableList(teamsThemes));
-    gameThemes.put(GameThemes.GUESS_THE_BUILD_EASY, Collections.unmodifiableList(GTBThemesEasy));
-    gameThemes.put(GameThemes.GUESS_THE_BUILD_MEDIUM, Collections.unmodifiableList(GTBThemesMedium));
-    gameThemes.put(GameThemes.GUESS_THE_BUILD_HARD, Collections.unmodifiableList(GTBThemesHard));
-  }
+    public void saveThemesToConfig() {
 
-  private void loadSpecialThemes() {
-    for(Holiday holiday : plugin.getHolidayManager().getEnabledHolidays()) {
-      List<String> themeList = themesConfig.getStringList("Holiday." + holiday.getName());
+        themesConfig.set("Themes.Classic", classicThemes);
+        themesConfig.set("Themes.Teams", teamsThemes);
+        themesConfig.set("Themes.Guess-The-Build.Easy", GTBThemesEasy);
+        themesConfig.set("Themes.Guess-The-Build.Medium", GTBThemesMedium);
+        themesConfig.set("Themes.Guess-The-Build.Hard", GTBThemesHard);
 
-      if(themeList.isEmpty()) {
-        continue;
-      }
+        ConfigUtils.saveConfig(plugin, themesConfig, "themes");
 
-      Optional.ofNullable(gameThemes.get(GameThemes.CLASSIC)).ifPresent(themeList::addAll);
-
-      gameThemes.put(GameThemes.CLASSIC, Collections.unmodifiableList(themeList));
-      gameThemes.put(GameThemes.TEAMS, Collections.unmodifiableList(themeList));
-      gameThemes.put(GameThemes.GUESS_THE_BUILD_EASY, Collections.unmodifiableList(themeList));
-      gameThemes.put(GameThemes.GUESS_THE_BUILD_MEDIUM, Collections.unmodifiableList(themeList));
-      gameThemes.put(GameThemes.GUESS_THE_BUILD_HARD, Collections.unmodifiableList(themeList));
-    }
-  }
-
-  public List<String> getThemes(GameThemes type) {
-    return type == null ? new ArrayList<>() : gameThemes.getOrDefault(type, new ArrayList<>());
-  }
-
-  public boolean isThemeBlacklisted(String theme) {
-    for(String s : blacklistedNames) {
-      if(s.equalsIgnoreCase(theme)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  public enum GameThemes {
-
-    SOLO("Classic"), TEAM("Teams"),
-    GUESS_THE_BUILD_EASY("Guess-The-Build_EASY"), GUESS_THE_BUILD_MEDIUM("Guess-The-Build_MEDIUM"), GUESS_THE_BUILD_HARD("Guess-The-Build_HARD"),
-    CLASSIC, TEAMS;
-
-    public final String strip;
-
-    public static final GameThemes[] VALUES = GameThemes.values();
-
-    GameThemes() {
-      strip = name();
     }
 
-    GameThemes(String name) {
-      strip = name.replace("-", "").replace("_", "");
+    public void loadThemes(boolean ignoreHolidays) {
+
+        // Remove all colours from theme names
+        classicThemes.replaceAll(ChatColor::stripColor);
+        teamsThemes.replaceAll(ChatColor::stripColor);
+        GTBThemesEasy.replaceAll(ChatColor::stripColor);
+        GTBThemesMedium.replaceAll(ChatColor::stripColor);
+        GTBThemesHard.replaceAll(ChatColor::stripColor);
+
+        if (!ignoreHolidays && !plugin.getHolidayManager().getEnabledHolidays().isEmpty()) {
+
+            loadSpecialThemes();
+            return;
+
+        }
+
+        gameThemes.put(GameThemes.SOLO, Collections.unmodifiableList(classicThemes));
+        gameThemes.put(GameThemes.TEAM, Collections.unmodifiableList(teamsThemes));
+        gameThemes.put(GameThemes.GUESS_THE_BUILD_EASY, Collections.unmodifiableList(GTBThemesEasy));
+        gameThemes.put(GameThemes.GUESS_THE_BUILD_MEDIUM, Collections.unmodifiableList(GTBThemesMedium));
+        gameThemes.put(GameThemes.GUESS_THE_BUILD_HARD, Collections.unmodifiableList(GTBThemesHard));
+
     }
 
-    @Nullable
-    public static GameThemes getByArenaType(BaseArena.ArenaType arenaType) {
-      switch(arenaType) {
-      case SOLO:
-        return SOLO;
-      case TEAM:
-        return TEAM;
-      default:
-        return null;
-      }
+    private void loadSpecialThemes() {
+
+        for (Holiday holiday : plugin.getHolidayManager().getEnabledHolidays()) {
+
+            List<String> themeList = themesConfig.getStringList("Holiday." + holiday.getName());
+
+            if (themeList.isEmpty()) {
+
+                continue;
+
+            }
+
+            Optional.ofNullable(gameThemes.get(GameThemes.CLASSIC)).ifPresent(themeList::addAll);
+
+            gameThemes.put(GameThemes.CLASSIC, Collections.unmodifiableList(themeList));
+            gameThemes.put(GameThemes.TEAMS, Collections.unmodifiableList(themeList));
+            gameThemes.put(GameThemes.GUESS_THE_BUILD_EASY, Collections.unmodifiableList(themeList));
+            gameThemes.put(GameThemes.GUESS_THE_BUILD_MEDIUM, Collections.unmodifiableList(themeList));
+            gameThemes.put(GameThemes.GUESS_THE_BUILD_HARD, Collections.unmodifiableList(themeList));
+
+        }
+
     }
 
-    @Nullable
-    public static GameThemes getByDifficulty(GuessTheme.Difficulty difficulty) {
-      switch(difficulty) {
-      case EASY:
-        return GUESS_THE_BUILD_EASY;
-      case MEDIUM:
-        return GUESS_THE_BUILD_MEDIUM;
-      case HARD:
-        return GUESS_THE_BUILD_HARD;
-      default:
-        return null;
-      }
+    public List<String> getThemes(GameThemes type) {
+
+        return type == null ? new ArrayList<>() : gameThemes.getOrDefault(type, new ArrayList<>());
+
     }
-  }
+
+    public boolean isThemeBlacklisted(String theme) {
+
+        for (String s : blacklistedNames) {
+
+            if (s.equalsIgnoreCase(theme)) {
+
+                return true;
+
+            }
+
+        }
+
+        return false;
+
+    }
+
+    public enum GameThemes {
+
+        SOLO("Classic"), TEAM("Teams"), GUESS_THE_BUILD_EASY("Guess-The-Build_EASY"),
+        GUESS_THE_BUILD_MEDIUM("Guess-The-Build_MEDIUM"), GUESS_THE_BUILD_HARD("Guess-The-Build_HARD"), CLASSIC, TEAMS;
+
+        public final String strip;
+
+        public static final GameThemes[] VALUES = GameThemes.values();
+
+        GameThemes() {
+
+            strip = name();
+
+        }
+
+        GameThemes(String name) {
+
+            strip = name.replace("-", "").replace("_", "");
+
+        }
+
+        @Nullable
+        public static GameThemes getByArenaType(BaseArena.ArenaType arenaType) {
+
+            switch (arenaType) {
+
+                case SOLO:
+                    return SOLO;
+                case TEAM:
+                    return TEAM;
+                default:
+                    return null;
+
+            }
+
+        }
+
+        @Nullable
+        public static GameThemes getByDifficulty(GuessTheme.Difficulty difficulty) {
+
+            switch (difficulty) {
+
+                case EASY:
+                    return GUESS_THE_BUILD_EASY;
+                case MEDIUM:
+                    return GUESS_THE_BUILD_MEDIUM;
+                case HARD:
+                    return GUESS_THE_BUILD_HARD;
+                default:
+                    return null;
+
+            }
+
+        }
+
+    }
+
 }

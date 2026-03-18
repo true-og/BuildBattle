@@ -29,22 +29,28 @@ import plugily.projects.minigamesbox.classic.commands.arguments.data.CommandArgu
 
 /**
  * @author Tigerpanzer_02
- * <p>
- * Created at 27.12.2020
+ *         <p>
+ *         Created at 27.12.2020
  */
 public class MenuArgument {
 
-  public MenuArgument(ArgumentsRegistry registry) {
-    registry.mapArgument("buildbattle", new CommandArgument("menu", "", CommandArgument.ExecutorType.PLAYER) {
-      @Override
-      public void execute(CommandSender sender, String[] args) {
-        Player player = (Player) sender;
-        BaseArena arena = (BaseArena) registry.getPlugin().getArenaRegistry().getArena(player);
+    public MenuArgument(ArgumentsRegistry registry) {
 
-        if(arena != null && (arena.getArenaState() == IArenaState.IN_GAME))
-          arena.getPlugin().getOptionsRegistry().getOptionsGui().open(player);
-      }
-    });
-  }
+        registry.mapArgument("buildbattle", new CommandArgument("menu", "", CommandArgument.ExecutorType.PLAYER) {
+
+            @Override
+            public void execute(CommandSender sender, String[] args) {
+
+                Player player = (Player) sender;
+                BaseArena arena = (BaseArena) registry.getPlugin().getArenaRegistry().getArena(player);
+
+                if (arena != null && (arena.getArenaState() == IArenaState.IN_GAME))
+                    arena.getPlugin().getOptionsRegistry().getOptionsGui().open(player);
+
+            }
+
+        });
+
+    }
 
 }

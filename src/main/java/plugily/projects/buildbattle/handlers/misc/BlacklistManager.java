@@ -32,53 +32,73 @@ import java.util.Optional;
 
 /**
  * @author Tigerpanzer_02
- * <p>
- * Created at 19.06.2022
+ *         <p>
+ *         Created at 19.06.2022
  */
 public class BlacklistManager {
 
-  private final Main plugin;
-  private List<Material> itemList;
-  private List<Material> floorList;
+    private final Main plugin;
+    private List<Material> itemList;
+    private List<Material> floorList;
 
-  public BlacklistManager(Main plugin) {
-    this.plugin = plugin;
-    loadBlackList();
-  }
+    public BlacklistManager(Main plugin) {
 
-  public List<Material> getItemList() {
-    return itemList;
-  }
+        this.plugin = plugin;
+        loadBlackList();
 
-  public List<Material> getFloorList() {
-    return floorList;
-  }
-
-  private void loadBlackList() {
-    floorList = new ArrayList<>();
-    itemList = new ArrayList<>();
-
-    for(String item : plugin.getConfig().getStringList("Items.BlacklistManager")) {
-      Optional<XMaterial> opt = XMaterial.matchXMaterial(item.toUpperCase(Locale.ENGLISH));
-      if(!opt.isPresent()) {
-        plugin.getDebugger().sendConsoleMsg("&c[Build Battle] Invalid black listed item! " + item + " doesn't exist, are you sure it's properly named?");
-        continue;
-      }
-      itemList.add(opt.get().parseMaterial());
     }
 
-    itemList = Collections.unmodifiableList(itemList);
+    public List<Material> getItemList() {
 
-    for(String item : plugin.getConfig().getStringList("Floor.BlacklistManager")) {
-      Optional<XMaterial> opt = XMaterial.matchXMaterial(item.toUpperCase(Locale.ENGLISH));
-      if(!opt.isPresent()) {
-        plugin.getDebugger().sendConsoleMsg("&c[Build Battle] Invalid black listed item! " + item + " doesn't exist, are you sure it's properly named?");
-        continue;
-      }
-      floorList.add(opt.get().parseMaterial());
+        return itemList;
+
     }
 
-    floorList = Collections.unmodifiableList(floorList);
-  }
+    public List<Material> getFloorList() {
+
+        return floorList;
+
+    }
+
+    private void loadBlackList() {
+
+        floorList = new ArrayList<>();
+        itemList = new ArrayList<>();
+
+        for (String item : plugin.getConfig().getStringList("Items.BlacklistManager")) {
+
+            Optional<XMaterial> opt = XMaterial.matchXMaterial(item.toUpperCase(Locale.ENGLISH));
+            if (!opt.isPresent()) {
+
+                plugin.getDebugger().sendConsoleMsg("&c[Build Battle] Invalid black listed item! " + item
+                        + " doesn't exist, are you sure it's properly named?");
+                continue;
+
+            }
+
+            itemList.add(opt.get().parseMaterial());
+
+        }
+
+        itemList = Collections.unmodifiableList(itemList);
+
+        for (String item : plugin.getConfig().getStringList("Floor.BlacklistManager")) {
+
+            Optional<XMaterial> opt = XMaterial.matchXMaterial(item.toUpperCase(Locale.ENGLISH));
+            if (!opt.isPresent()) {
+
+                plugin.getDebugger().sendConsoleMsg("&c[Build Battle] Invalid black listed item! " + item
+                        + " doesn't exist, are you sure it's properly named?");
+                continue;
+
+            }
+
+            floorList.add(opt.get().parseMaterial());
+
+        }
+
+        floorList = Collections.unmodifiableList(floorList);
+
+    }
 
 }

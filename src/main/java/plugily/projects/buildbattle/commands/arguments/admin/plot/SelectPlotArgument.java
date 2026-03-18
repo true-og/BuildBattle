@@ -29,22 +29,32 @@ import plugily.projects.minigamesbox.classic.commands.arguments.data.CommandArgu
 
 /**
  * @author Tigerpanzer_02
- * <p>
- * Created at 27.12.2020
+ *         <p>
+ *         Created at 27.12.2020
  */
 public class SelectPlotArgument {
 
-  public SelectPlotArgument(ArgumentsRegistry registry) {
-    registry.mapArgument("buildbattle", new CommandArgument("selectplot", "buildbattle.command.selectplot", CommandArgument.ExecutorType.PLAYER) {
-      @Override
-      public void execute(CommandSender sender, String[] args) {
-        Player player = (Player) sender;
-        BaseArena arena = (BaseArena) registry.getPlugin().getArenaRegistry().getArena(player);
+    public SelectPlotArgument(ArgumentsRegistry registry) {
 
-        if(arena != null && (arena.getArenaState() == IArenaState.WAITING_FOR_PLAYERS || arena.getArenaState() == IArenaState.STARTING || arena.getArenaState() == IArenaState.FULL_GAME))
-          arena.getPlugin().getPlotMenuHandler().createMenu(player, arena);
-      }
-    });
-  }
+        registry.mapArgument("buildbattle",
+                new CommandArgument("selectplot", "buildbattle.command.selectplot", CommandArgument.ExecutorType.PLAYER)
+                {
+
+                    @Override
+                    public void execute(CommandSender sender, String[] args) {
+
+                        Player player = (Player) sender;
+                        BaseArena arena = (BaseArena) registry.getPlugin().getArenaRegistry().getArena(player);
+
+                        if (arena != null && (arena.getArenaState() == IArenaState.WAITING_FOR_PLAYERS
+                                || arena.getArenaState() == IArenaState.STARTING
+                                || arena.getArenaState() == IArenaState.FULL_GAME))
+                            arena.getPlugin().getPlotMenuHandler().createMenu(player, arena);
+
+                    }
+
+                });
+
+    }
 
 }

@@ -26,17 +26,19 @@ import plugily.projects.minigamesbox.classic.handlers.setup.categories.SetupCate
 
 /**
  * @author Tigerpanzer_02
- * <p>
- * Created at 01.07.2022
+ *         <p>
+ *         Created at 01.07.2022
  */
 public class SetupCategoryManager extends PluginSetupCategoryManager {
 
-  public SetupCategoryManager(SetupInventory setupInventory) {
-    super(setupInventory);
-    getCategoryHandler().put(SetupCategory.LOCATIONS, new LocationCategory());
-    getCategoryHandler().put(SetupCategory.SWITCH, new SwitchCategory());
-    getCategoryHandler().put(SetupCategory.SPECIFIC, new SpecificCategory());
-   super.init();
-  }
+    public SetupCategoryManager(SetupInventory setupInventory) {
+
+        super(setupInventory);
+        getCategoryHandler().put(SetupCategory.LOCATIONS, new LocationCategory());
+        getCategoryHandler().put(SetupCategory.SWITCH, new SwitchCategory());
+        getCategoryHandler().put(SetupCategory.SPECIFIC, new SpecificCategory());
+        super.init();
+
+    }
 
 }

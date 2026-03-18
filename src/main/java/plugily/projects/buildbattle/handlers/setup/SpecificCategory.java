@@ -32,48 +32,72 @@ import plugily.projects.minigamesbox.classic.utils.helper.ItemBuilder;
 import plugily.projects.minigamesbox.classic.utils.version.xseries.XMaterial;
 import plugily.projects.minigamesbox.inventory.normal.NormalFastInv;
 
-
 /**
  * @author Tigerpanzer_02
- * <p>
- * Created at 01.07.2022
+ *         <p>
+ *         Created at 01.07.2022
  */
 public class SpecificCategory extends PluginSpecificCategory {
-  @Override
-  public void addItems(NormalFastInv gui) {
-    super.addItems(gui);
 
-    BaseArena arena = (BaseArena) getSetupInventory().getPlugin().getArenaRegistry().getArena(getSetupInventory().getArenaKey());
-    int minPlots = 2;
-    if(arena instanceof GuessArena) {
-      minPlots = 1;
+    @Override
+    public void addItems(NormalFastInv gui) {
+
+        super.addItems(gui);
+
+        BaseArena arena = (BaseArena) getSetupInventory().getPlugin().getArenaRegistry()
+                .getArena(getSetupInventory().getArenaKey());
+        int minPlots = 2;
+        if (arena instanceof GuessArena) {
+
+            minPlots = 1;
+
+        }
+
+        MultiLocationSelectorItem gamePlot = new MultiLocationSelectorItem(getSetupInventory(),
+                new ItemBuilder(XMaterial.DIAMOND.parseMaterial()), "Game Plot",
+                "Select one plot with our built-in \n selector (select minimum and maximum \n plot opposite selections with built-in wand) \n INCLUDE the plot floor!",
+                "plots", minPlots);
+        gui.setItem((getInventoryLine() * 9) + 1, gamePlot);
+        getItemList().add(gamePlot);
+
+        MultiLocationItem floorNPC = new MultiLocationItem(getSetupInventory(),
+                new ItemBuilder(XMaterial.VILLAGER_SPAWN_EGG.parseMaterial()), "Floor Changer NPC",
+                "Add floor changer NPC to your plot.\nRequires Citizens plugin! Runs addnpc command", "floornpc", 0,
+                event ->
+                {
+
+                    switch (event.getClick()) {
+
+                        case LEFT:
+                            ((Player) event.getWhoClicked()).performCommand("bba addnpc");
+
+                    }
+
+                }, interactEvent -> {
+
+                    switch (interactEvent.getAction()) {
+
+                        case PHYSICAL:
+                        case LEFT_CLICK_AIR:
+                            interactEvent.getPlayer().performCommand("bba addnpc");
+                            (new MessageBuilder(
+                                    "&cPlease keep in mind to use blocks instead of player location for precise coordinates!"))
+                                    .prefix().send(interactEvent.getPlayer());
+                            break;
+                        case LEFT_CLICK_BLOCK:
+                            interactEvent.getPlayer().performCommand("bba addnpc");
+
+                    }
+
+                });
+        gui.setItem((getInventoryLine() * 9) + 2, floorNPC);
+        getItemList().add(floorNPC);
+
+        CountItem plotSize = new CountItem(getSetupInventory(), new ItemBuilder(XMaterial.CAKE.parseMaterial()),
+                "Plot Member Size", "Choose how many players can play on one plot", "plotmembersize");
+        gui.setItem((getInventoryLine() * 9) + 3, plotSize);
+        getItemList().add(plotSize);
+
     }
-    MultiLocationSelectorItem gamePlot = new MultiLocationSelectorItem(getSetupInventory(), new ItemBuilder(XMaterial.DIAMOND.parseMaterial()), "Game Plot", "Select one plot with our built-in \n selector (select minimum and maximum \n plot opposite selections with built-in wand) \n INCLUDE the plot floor!", "plots", minPlots);
-    gui.setItem((getInventoryLine() * 9) + 1, gamePlot);
-    getItemList().add(gamePlot);
-
-    MultiLocationItem floorNPC = new MultiLocationItem(getSetupInventory(), new ItemBuilder(XMaterial.VILLAGER_SPAWN_EGG.parseMaterial()), "Floor Changer NPC", "Add floor changer NPC to your plot.\nRequires Citizens plugin! Runs addnpc command", "floornpc", 0, event -> {
-      switch (event.getClick()) {
-        case LEFT:
-          ((Player) event.getWhoClicked()).performCommand("bba addnpc");
-      }
-    }, interactEvent -> {
-      switch (interactEvent.getAction()) {
-        case PHYSICAL:
-        case LEFT_CLICK_AIR:
-          interactEvent.getPlayer().performCommand("bba addnpc");
-          (new MessageBuilder("&cPlease keep in mind to use blocks instead of player location for precise coordinates!")).prefix().send(interactEvent.getPlayer());
-          break;
-        case LEFT_CLICK_BLOCK:
-          interactEvent.getPlayer().performCommand("bba addnpc");
-      }
-    });
-    gui.setItem((getInventoryLine() * 9) + 2, floorNPC);
-    getItemList().add(floorNPC);
-
-    CountItem plotSize = new CountItem(getSetupInventory(), new ItemBuilder(XMaterial.CAKE.parseMaterial()), "Plot Member Size", "Choose how many players can play on one plot", "plotmembersize");
-    gui.setItem((getInventoryLine() * 9) + 3, plotSize);
-    getItemList().add(plotSize);
-  }
 
 }

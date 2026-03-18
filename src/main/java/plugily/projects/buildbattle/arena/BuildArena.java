@@ -34,152 +34,234 @@ import java.util.stream.Collectors;
 
 /**
  * @author Tigerpanzer_02
- * <p>
- * Created at 22.04.2022
+ *         <p>
+ *         Created at 22.04.2022
  */
 public class BuildArena extends BaseArena {
-  private final Queue<Plot> queue = new LinkedList<>();
-  private Plot votingPlot;
-  private VoteMenu voteMenu;
 
-  public BuildArena(String id) {
-    super(id);
-    setArenaType(ArenaType.SOLO);
-    addGameStateHandler(IArenaState.IN_GAME, new InGameState());
-    addGameStateHandler(IArenaState.STARTING, new StartingState());
-    getPlugin().getDebugger().debug("Init Arena {0} with ArenaType {1}", getId(), getArenaType());
-  }
+    private final Queue<Plot> queue = new LinkedList<>();
+    private Plot votingPlot;
+    private VoteMenu voteMenu;
 
-  /**
-   * Initiates voting poll
-   */
-  public void initPoll() {
-    voteMenu = new VoteMenu(this);
-    voteMenu.resetPoll();
-  }
+    public BuildArena(String id) {
 
-  @Override
-  public void cleanUpArena() {
-    votingPlot = null;
-    if(voteMenu != null) {
-      voteMenu.resetPoll();
+        super(id);
+        setArenaType(ArenaType.SOLO);
+        addGameStateHandler(IArenaState.IN_GAME, new InGameState());
+        addGameStateHandler(IArenaState.STARTING, new StartingState());
+        getPlugin().getDebugger().debug("Init Arena {0} with ArenaType {1}", getId(), getArenaType());
+
     }
-    super.cleanUpArena();
-  }
 
-  public VotePoll getVotePoll() {
-    return voteMenu.getVotePoll();
-  }
+    /**
+     * Initiates voting poll
+     */
+    public void initPoll() {
 
-  public VoteMenu getVoteMenu() {
-    return voteMenu;
-  }
+        voteMenu = new VoteMenu(this);
+        voteMenu.resetPoll();
 
-  public void setVotingPlot(Plot votingPlot) {
-    this.votingPlot = votingPlot;
-  }
-
-  public Plot getVotingPlot() {
-    return votingPlot;
-  }
-
-  @NotNull
-  public Queue<Plot> getQueue() {
-    return queue;
-  }
-
-  @Override
-  public void distributePlots() {
-    int neededPlots = getPlayersLeft().size() / getArenaOption("PLOT_MEMBER_SIZE");
-    if(getPlotManager().getPlots().size() < neededPlots) {
-      getPlugin().getMessageUtils().errorOccurred();
-      getPlugin().getDebugger().sendConsoleMsg("&c[Build Battle] [PLOT WARNING] Not enough plots in arena " + getId() + "! Lacks " + (neededPlots - getPlotManager().getPlots().size()) + " plots");
-      getPlugin().getDebugger().sendConsoleMsg("&c[PLOT WARNING] Required " + neededPlots + " but have " + getPlotManager().getPlots().size());
-      getPlugin().getDebugger().sendConsoleMsg("&c[PLOT WARNING] Instance was stopped!");
-      getPlugin().getArenaManager().stopGame(true, this);
     }
-    switch(getArenaType()) {
-      case SOLO:
-        List<Player> players = new ArrayList<>(getPlayersLeft());
-        for(Plot plot : getPlotManager().getPlots()) {
-          if(players.isEmpty()) {
-            break;
-          }
-          if(!plot.getMembers().isEmpty()) {
-            continue;
-          }
-          if(!getPlugin().getUserManager().getUser(players.get(0)).isSpectator()) {
-            plot.addMember(players.remove(0), this, true);
-          }
+
+    @Override
+    public void cleanUpArena() {
+
+        votingPlot = null;
+        if (voteMenu != null) {
+
+            voteMenu.resetPoll();
+
         }
-        break;
-      case TEAM:
-        int plotMemberSize = getArenaOption("PLOT_MEMBER_SIZE");
-        int neededDividedPlots = getPlayersLeft().size() / plotMemberSize;
-        int currentDividedPlots = (int) getPlotManager().getPlots().stream().filter(plot -> plot.getMembersSize() > 0).count();
 
+        super.cleanUpArena();
 
-        if(neededDividedPlots > currentDividedPlots) {
-          List<Plot> fullPlots = getPlotManager().getPlots().stream().filter(plot -> plot.getMembersSize() == plotMemberSize).collect(Collectors.toList());
-          List<Player> playersToMove = getPlayersLeft().stream().filter(player -> fullPlots.stream().noneMatch(plot -> plot.getMembers().contains(player))).collect(Collectors.toList());
-          if(!playersToMove.isEmpty()) {
-              for(int i = 0; i < playersToMove.size(); i++) {
-                  Player move = playersToMove.get(i);
-                  List<Plot> emptyPlots = getPlotManager().getPlots().stream().filter(plot -> plot.getMembersSize() < plotMemberSize).collect(Collectors.toList());
-                  Plot maxEmptyPlot = emptyPlots.stream().max(Comparator.comparing(Plot::getMembersSize)).get();
-                  maxEmptyPlot.addMember(move, this, true);
-              }
-          }
+    }
+
+    public VotePoll getVotePoll() {
+
+        return voteMenu.getVotePoll();
+
+    }
+
+    public VoteMenu getVoteMenu() {
+
+        return voteMenu;
+
+    }
+
+    public void setVotingPlot(Plot votingPlot) {
+
+        this.votingPlot = votingPlot;
+
+    }
+
+    public Plot getVotingPlot() {
+
+        return votingPlot;
+
+    }
+
+    @NotNull
+    public Queue<Plot> getQueue() {
+
+        return queue;
+
+    }
+
+    @Override
+    public void distributePlots() {
+
+        int neededPlots = getPlayersLeft().size() / getArenaOption("PLOT_MEMBER_SIZE");
+        if (getPlotManager().getPlots().size() < neededPlots) {
+
+            getPlugin().getMessageUtils().errorOccurred();
+            getPlugin().getDebugger().sendConsoleMsg("&c[Build Battle] [PLOT WARNING] Not enough plots in arena "
+                    + getId() + "! Lacks " + (neededPlots - getPlotManager().getPlots().size()) + " plots");
+            getPlugin().getDebugger().sendConsoleMsg(
+                    "&c[PLOT WARNING] Required " + neededPlots + " but have " + getPlotManager().getPlots().size());
+            getPlugin().getDebugger().sendConsoleMsg("&c[PLOT WARNING] Instance was stopped!");
+            getPlugin().getArenaManager().stopGame(true, this);
+
         }
-        //check if not only one plot got players
-        Plot maxPlayers = getPlotManager().getPlots().stream().max(Comparator.comparing(Plot::getMembersSize)).get();
-        Plot minPlayers = getPlotManager().getPlots().stream().min(Comparator.comparing(Plot::getMembersSize)).get();
-        if(maxPlayers.getMembersSize() == getPlayersLeft().size()) {
-          for(int i = 0; i < maxPlayers.getMembersSize() / 2; i++) {
-            Player move = maxPlayers.getMembers().get(i);
-            minPlayers.addMember(move, this, true);
-            maxPlayers.removeMember(move);
-          }
+
+        switch (getArenaType()) {
+
+            case SOLO:
+                List<Player> players = new ArrayList<>(getPlayersLeft());
+                for (Plot plot : getPlotManager().getPlots()) {
+
+                    if (players.isEmpty()) {
+
+                        break;
+
+                    }
+
+                    if (!plot.getMembers().isEmpty()) {
+
+                        continue;
+
+                    }
+
+                    if (!getPlugin().getUserManager().getUser(players.get(0)).isSpectator()) {
+
+                        plot.addMember(players.remove(0), this, true);
+
+                    }
+
+                }
+                break;
+            case TEAM:
+                int plotMemberSize = getArenaOption("PLOT_MEMBER_SIZE");
+                int neededDividedPlots = getPlayersLeft().size() / plotMemberSize;
+                int currentDividedPlots = (int) getPlotManager().getPlots().stream()
+                        .filter(plot -> plot.getMembersSize() > 0).count();
+
+                if (neededDividedPlots > currentDividedPlots) {
+
+                    List<Plot> fullPlots = getPlotManager().getPlots().stream()
+                            .filter(plot -> plot.getMembersSize() == plotMemberSize).collect(Collectors.toList());
+                    List<Player> playersToMove = getPlayersLeft().stream()
+                            .filter(player -> fullPlots.stream().noneMatch(plot -> plot.getMembers().contains(player)))
+                            .collect(Collectors.toList());
+                    if (!playersToMove.isEmpty()) {
+
+                        for (int i = 0; i < playersToMove.size(); i++) {
+
+                            Player move = playersToMove.get(i);
+                            List<Plot> emptyPlots = getPlotManager().getPlots().stream()
+                                    .filter(plot -> plot.getMembersSize() < plotMemberSize)
+                                    .collect(Collectors.toList());
+                            Plot maxEmptyPlot = emptyPlots.stream().max(Comparator.comparing(Plot::getMembersSize))
+                                    .get();
+                            maxEmptyPlot.addMember(move, this, true);
+
+                        }
+
+                    }
+
+                }
+                // check if not only one plot got players
+                Plot maxPlayers = getPlotManager().getPlots().stream().max(Comparator.comparing(Plot::getMembersSize))
+                        .get();
+                Plot minPlayers = getPlotManager().getPlots().stream().min(Comparator.comparing(Plot::getMembersSize))
+                        .get();
+                if (maxPlayers.getMembersSize() == getPlayersLeft().size()) {
+
+                    for (int i = 0; i < maxPlayers.getMembersSize() / 2; i++) {
+
+                        Player move = maxPlayers.getMembers().get(i);
+                        minPlayers.addMember(move, this, true);
+                        maxPlayers.removeMember(move);
+
+                    }
+
+                }
+
         }
-    }
-    for(Plot plot : getPlotManager().getPlots()) {
-      if(plot.getMembers().isEmpty()) {
-        continue;
-      }
-      for(Player member : plot.getMembers()) {
-        getPlotList().put(member, plot);
-      }
-    }
-    getPlotManager().teleportToPlots();
-  }
 
+        for (Plot plot : getPlotManager().getPlots()) {
 
-  @Override
-  public boolean enoughPlayersToContinue() {
-    int size = getPlayersLeft().size();
-    int memberSize = getArenaOption("PLOT_MEMBER_SIZE");
+            if (plot.getMembers().isEmpty()) {
 
-    if(size > memberSize) {
-      return true;
+                continue;
+
+            }
+
+            for (Player member : plot.getMembers()) {
+
+                getPlotList().put(member, plot);
+
+            }
+
+        }
+
+        getPlotManager().teleportToPlots();
+
     }
-    if(size == memberSize) {
-      return !new HashSet<>(getPlotManager().getPlot(getPlayersLeft().get(0)).getMembers()).containsAll(getPlayersLeft());
-    }
-    return false;
-  }
 
-  @Override
-  public void setMinimumPlayers(int amount) {
-    if(getArenaType() == ArenaType.TEAM && amount <= getArenaOption("PLOT_MEMBER_SIZE")) {
-      getPlugin().getDebugger().debug("Minimum players amount for TEAM game mode arena cannot be less than 3! Setting amount to 3!");
-      super.setMinimumPlayers(3);
-      return;
-    }
-    super.setMinimumPlayers(amount);
-  }
+    @Override
+    public boolean enoughPlayersToContinue() {
 
-  protected void setTypeByPlotMembers() {
-    setArenaType(getArenaOption("PLOT_MEMBER_SIZE") <= 1 ? ArenaType.SOLO : ArenaType.TEAM);
-  }
+        int size = getPlayersLeft().size();
+        int memberSize = getArenaOption("PLOT_MEMBER_SIZE");
+
+        if (size > memberSize) {
+
+            return true;
+
+        }
+
+        if (size == memberSize) {
+
+            return !new HashSet<>(getPlotManager().getPlot(getPlayersLeft().get(0)).getMembers())
+                    .containsAll(getPlayersLeft());
+
+        }
+
+        return false;
+
+    }
+
+    @Override
+    public void setMinimumPlayers(int amount) {
+
+        if (getArenaType() == ArenaType.TEAM && amount <= getArenaOption("PLOT_MEMBER_SIZE")) {
+
+            getPlugin().getDebugger().debug(
+                    "Minimum players amount for TEAM game mode arena cannot be less than 3! Setting amount to 3!");
+            super.setMinimumPlayers(3);
+            return;
+
+        }
+
+        super.setMinimumPlayers(amount);
+
+    }
+
+    protected void setTypeByPlotMembers() {
+
+        setArenaType(getArenaOption("PLOT_MEMBER_SIZE") <= 1 ? ArenaType.SOLO : ArenaType.TEAM);
+
+    }
 
 }

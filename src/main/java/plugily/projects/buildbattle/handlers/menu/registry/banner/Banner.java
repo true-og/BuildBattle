@@ -35,58 +35,81 @@ import java.util.List;
 
 /**
  * @author Plajer
- * <p>
- * Created at 16.07.2019
+ *         <p>
+ *         Created at 16.07.2019
  */
 public class Banner {
 
-  private final List<BannerPattern> patterns = new LinkedList<>();
-  private DyeColor color = DyeColor.WHITE;
+    private final List<BannerPattern> patterns = new LinkedList<>();
+    private DyeColor color = DyeColor.WHITE;
 
-  public void setBaseColor(DyeColor dyeColor) {
-    color = dyeColor;
-  }
+    public void setBaseColor(DyeColor dyeColor) {
 
-  public void addPattern(BannerPattern pattern) {
-    patterns.add(pattern);
-  }
+        color = dyeColor;
 
-  public void replaceLastPattern(BannerPattern pattern) {
-    patterns.remove(patterns.size() - 1);
-    patterns.add(pattern);
-  }
-
-  public BannerPattern getLastPattern() {
-    if(patterns.isEmpty()) {
-      return new BannerPattern(DyeColor.BLACK, PatternType.BASE);
-    }
-    return patterns.get(patterns.size() - 1);
-  }
-
-  @SuppressWarnings("deprecation")
-  public ItemStack buildBanner() {
-    ItemStack item = XMaterial.WHITE_BANNER.parseItem();
-    BannerMeta meta = (BannerMeta) item.getItemMeta();
-
-    if(ServerVersion.Version.isCurrentEqualOrLower(ServerVersion.Version.v1_12)) {
-      BlockStateMeta bsm = (BlockStateMeta) meta;
-      BlockState state = ((BlockStateMeta) meta).getBlockState();
-      if (state instanceof org.bukkit.block.Banner) {
-        ((org.bukkit.block.Banner) state).setBaseColor(color);
-        state.update(true);
-      }
-      bsm.setBlockState(state);
     }
 
-    for(BannerPattern pattern : patterns) {
-      meta.addPattern(new Pattern(pattern.getDyeColor(), pattern.getPatternType()));
+    public void addPattern(BannerPattern pattern) {
+
+        patterns.add(pattern);
+
     }
 
-    item.setItemMeta(meta);
-    return item;
-  }
+    public void replaceLastPattern(BannerPattern pattern) {
 
-  public DyeColor getColor() {
-    return color;
-  }
+        patterns.remove(patterns.size() - 1);
+        patterns.add(pattern);
+
+    }
+
+    public BannerPattern getLastPattern() {
+
+        if (patterns.isEmpty()) {
+
+            return new BannerPattern(DyeColor.BLACK, PatternType.BASE);
+
+        }
+
+        return patterns.get(patterns.size() - 1);
+
+    }
+
+    @SuppressWarnings("deprecation")
+    public ItemStack buildBanner() {
+
+        ItemStack item = XMaterial.WHITE_BANNER.parseItem();
+        BannerMeta meta = (BannerMeta) item.getItemMeta();
+
+        if (ServerVersion.Version.isCurrentEqualOrLower(ServerVersion.Version.v1_12)) {
+
+            BlockStateMeta bsm = (BlockStateMeta) meta;
+            BlockState state = ((BlockStateMeta) meta).getBlockState();
+            if (state instanceof org.bukkit.block.Banner) {
+
+                ((org.bukkit.block.Banner) state).setBaseColor(color);
+                state.update(true);
+
+            }
+
+            bsm.setBlockState(state);
+
+        }
+
+        for (BannerPattern pattern : patterns) {
+
+            meta.addPattern(new Pattern(pattern.getDyeColor(), pattern.getPatternType()));
+
+        }
+
+        item.setItemMeta(meta);
+        return item;
+
+    }
+
+    public DyeColor getColor() {
+
+        return color;
+
+    }
+
 }
