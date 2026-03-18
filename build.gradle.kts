@@ -26,7 +26,7 @@ group = "plugily.projects"
 
 version = "5.1.3"
 
-description = "BuildBattle" // Declare plugin version (will be in .jar).
+description = "BuildBattle-OG" // Declare plugin version (will be in .jar).
 
 val apiVersion = "1.19" // Declare minecraft server target version.
 

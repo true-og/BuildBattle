@@ -1,1 +1,1 @@
-rootProject.name = "BuildBattle"
+rootProject.name = "BuildBattle-OG"
