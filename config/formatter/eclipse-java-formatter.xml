@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<profiles version="21">
+    <profile kind="CodeFormatterProfile" name="BuildBattle" version="21">
+        <setting id="org.eclipse.jdt.core.compiler.compliance" value="17"/>
+        <setting id="org.eclipse.jdt.core.compiler.source" value="17"/>
+        <setting id="org.eclipse.jdt.core.compiler.codegen.targetPlatform" value="17"/>
+    </profile>
+</profiles>
