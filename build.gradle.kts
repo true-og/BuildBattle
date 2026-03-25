@@ -68,6 +68,8 @@ tasks.withType<AbstractArchiveTask>().configureEach { // Ensure reproducible .ja
 /* ----------------------------- Shadow -------------------------------- */
 tasks.shadowJar {
     exclude("io.github.miniplaceholders.*") // Exclude the MiniPlaceholders package from being shadowed.
+    exclude("plugily/projects/minigamesbox/classic/utils/services/locale/LocaleService.class")
+    exclude("plugily/projects/minigamesbox/classic/utils/services/locale/LocaleService$*.class")
     isEnableRelocation = true
     relocationPrefix = "${project.group}.shadow"
     relocate("com.zaxxer.hikari", "plugily.projects.buildbattle.database.hikari")

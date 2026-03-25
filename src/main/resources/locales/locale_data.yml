@@ -1,0 +1,6 @@
+locales:
+  valid-version: 5.1.3
+  register:
+    en_US:
+      name: English
+      original_name: English
