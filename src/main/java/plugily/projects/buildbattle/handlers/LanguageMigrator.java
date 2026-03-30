@@ -40,7 +40,7 @@ public class LanguageMigrator {
 
     public enum PluginFileVersion {
         /* ARENA_SELECTOR(0), */ BUNGEE(1), CONFIG(1), LANGUAGE(2), /* LEADERBOARDS(0), */ MYSQL(1), PERMISSIONS(1),
-        POWERUPS(1), /* SIGNS(0), */ SPECIAL_ITEMS(1), SPECTATOR(1)/* , STATS(0) */, MAIN_MENU(1);
+        /* SIGNS(0), */ SPECIAL_ITEMS(1), SPECTATOR(1)/* , STATS(0) */, MAIN_MENU(1);
 
         private final int version;
 

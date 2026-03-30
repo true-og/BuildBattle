@@ -35,8 +35,14 @@ import plugily.projects.minigamesbox.classic.utils.version.xseries.XMaterial;
 import plugily.projects.minigamesbox.inventory.utils.fastinv.InventoryScheme;
 import plugily.projects.minigamesbox.inventory.utils.fastinv.PaginatedFastInv;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 /**
@@ -218,11 +224,58 @@ public class PlayerHeadsRegistry {
 
         // Should do this in async thread to do not cause dead for the main thread
         long start = System.currentTimeMillis();
-        FileConfiguration categoryConfig = ConfigUtils.getConfig(plugin, "heads/database/" + name);
+        File file = new File(plugin.getDataFolder(), "heads/database/" + name + ".yml");
         Map<String, String> heads = new HashMap<>();
-        for (String path : categoryConfig.getKeys(false)) {
+        if (file.exists()) {
 
-            heads.put(path, categoryConfig.getString(path));
+            try (BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8)))
+            {
+
+                String line;
+                while ((line = reader.readLine()) != null) {
+
+                    line = line.trim();
+                    if (line.isEmpty() || line.startsWith("#")) {
+
+                        continue;
+
+                    }
+
+                    int colonIndex = line.indexOf(": ");
+                    if (colonIndex == -1) {
+
+                        continue;
+
+                    }
+
+                    String key = line.substring(0, colonIndex);
+                    String value = line.substring(colonIndex + 2);
+                    if (value.startsWith("\"") && value.endsWith("\"")) {
+
+                        value = value.substring(1, value.length() - 1);
+
+                    }
+
+                    if (value.startsWith("'") && value.endsWith("'")) {
+
+                        value = value.substring(1, value.length() - 1);
+
+                    }
+
+                    heads.put(key, value);
+
+                }
+
+            } catch (Exception e) {
+
+                plugin.getDebugger().debug(Level.WARNING, "Cannot load file heads/database/" + name + ".yml!");
+
+            }
+
+        } else {
+
+            plugin.getDebugger().debug(Level.WARNING, "File heads/database/" + name + ".yml does not exist!");
 
         }
 
