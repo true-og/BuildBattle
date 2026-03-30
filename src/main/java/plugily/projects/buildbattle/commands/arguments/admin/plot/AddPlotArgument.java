@@ -24,6 +24,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
+import plugily.projects.buildbattle.Main;
 import plugily.projects.buildbattle.arena.BaseArena;
 import plugily.projects.buildbattle.commands.arguments.ArgumentsRegistry;
 import plugily.projects.minigamesbox.classic.commands.arguments.data.CommandArgument;
@@ -73,6 +74,32 @@ public class AddPlotArgument {
                         if (selection == null || selection.getFirstPos() == null || selection.getSecondPos() == null) {
 
                             new MessageBuilder("&cPlease select both corners before adding a plot!").send(sender);
+                            return;
+
+                        }
+
+                        if (selection.getFirstPos().getWorld() == null || selection.getSecondPos().getWorld() == null) {
+
+                            new MessageBuilder("&cBoth plot corners must be inside a loaded MyWorlds game world!")
+                                    .send(sender);
+                            return;
+
+                        }
+
+                        if (!selection.getFirstPos().getWorld().equals(selection.getSecondPos().getWorld())) {
+
+                            new MessageBuilder("&cBoth plot corners must be in the same MyWorlds game world!")
+                                    .send(sender);
+                            return;
+
+                        }
+
+                        Main plugin = (Main) registry.getPlugin();
+
+                        if (plugin.getMyWorldsManager().isProtectedWorld(selection.getFirstPos().getWorld())) {
+
+                            new MessageBuilder("&cBuildBattle plots are blocked from protected main worlds: &e"
+                                    + plugin.getMyWorldsManager().getProtectedWorldsDescription()).send(sender);
                             return;
 
                         }

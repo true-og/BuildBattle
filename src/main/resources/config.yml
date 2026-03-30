@@ -33,6 +33,17 @@ Bungee-Mode: false
 # Saved elements: max health, health, food, experience, full inventory, armor contents, fire ticks, active potions
 Inventory-Manager: true
 
+MyWorlds:
+  # BuildBattle requires My_Worlds and will enable these MyWorlds settings on startup.
+  Enable-World-Inventories: true
+  Enable-World-Chat: true
+  # BuildBattle arenas, plots and lobby locations are blocked from these worlds.
+  # Keep this set to your server's main overworld/nether/end worlds.
+  Protected-Worlds:
+    - world
+    - world_nether
+    - world_the_end
+
 
 Commands:
   # Commands which can be used in game, remove all of them to disable (only works if Block.In-Game.Commands = true)

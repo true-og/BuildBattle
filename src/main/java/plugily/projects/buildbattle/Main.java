@@ -36,6 +36,7 @@ import plugily.projects.buildbattle.handlers.LanguageMigrator;
 import plugily.projects.buildbattle.handlers.menu.OptionsRegistry;
 import plugily.projects.buildbattle.handlers.misc.BlacklistManager;
 import plugily.projects.buildbattle.handlers.misc.HeadDatabaseManager;
+import plugily.projects.buildbattle.handlers.misc.MyWorldsManager;
 import plugily.projects.buildbattle.handlers.setup.SetupCategoryManager;
 import plugily.projects.buildbattle.handlers.themes.ThemeManager;
 import plugily.projects.minigamesbox.classic.PluginMain;
@@ -57,6 +58,7 @@ public class Main extends PluginMain {
     private ArenaManager arenaManager;
     private ArgumentsRegistry argumentsRegistry;
     private PlotMenuHandler plotMenuHandler;
+    private MyWorldsManager myWorldsManager;
 
     @TestOnly
     public Main() {
@@ -74,6 +76,13 @@ public class Main extends PluginMain {
         super.onEnable();
         getDebugger().debug("[System] [Plugin] Initialization start");
         arenaRegistry = new ArenaRegistry(this);
+        myWorldsManager = new MyWorldsManager(this);
+        if (!myWorldsManager.initialize()) {
+
+            return;
+
+        }
+
         new PlaceholderInitializer(this);
         messageInitializer.registerMessages();
         new AdditionalValueInitializer(this);
@@ -94,6 +103,7 @@ public class Main extends PluginMain {
         new ArenaEvents(this);
         arenaManager = new ArenaManager(this);
         arenaRegistry.registerArenas();
+        myWorldsManager.synchronizeArenaWorldInventories();
         getSignManager().loadSigns();
         getSignManager().updateSigns();
         argumentsRegistry = new ArgumentsRegistry(this);
@@ -155,6 +165,12 @@ public class Main extends PluginMain {
     public PlotMenuHandler getPlotMenuHandler() {
 
         return plotMenuHandler;
+
+    }
+
+    public MyWorldsManager getMyWorldsManager() {
+
+        return myWorldsManager;
 
     }
 

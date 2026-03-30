@@ -85,6 +85,34 @@ public class ArenaRegistry extends PluginArenaRegistry {
 
         boolean isBuildArena = arena instanceof BuildArena;
         boolean isGuessArena = arena instanceof GuessArena;
+        String arenaPath = id + ".";
+
+        if (!plugin.getMyWorldsManager().validateArenaWorld(
+                plugin.getMyWorldsManager().getWorldName(section.getString(arenaPath + "lobbylocation")),
+                "Lobby location", (BaseArena) arena))
+        {
+
+            return false;
+
+        }
+
+        if (!plugin.getMyWorldsManager().validateArenaWorld(
+                plugin.getMyWorldsManager().getWorldName(section.getString(arenaPath + "startlocation")),
+                "Start location", (BaseArena) arena))
+        {
+
+            return false;
+
+        }
+
+        if (!plugin.getMyWorldsManager().validateArenaWorld(
+                plugin.getMyWorldsManager().getWorldName(section.getString(arenaPath + "endlocation")), "End location",
+                (BaseArena) arena))
+        {
+
+            return false;
+
+        }
 
         if (isBuildArena) {
 
@@ -136,6 +164,18 @@ public class ArenaRegistry extends PluginArenaRegistry {
             String maxPointString = plotSection.getString(plotName + ".2", null);
 
             if (minPointString != null && maxPointString != null) {
+
+                if (!plugin.getMyWorldsManager().validateArenaWorld(
+                        plugin.getMyWorldsManager().getWorldName(minPointString), "Plot " + plotName + " corner 1",
+                        baseArena)
+                        || !plugin.getMyWorldsManager().validateArenaWorld(
+                                plugin.getMyWorldsManager().getWorldName(maxPointString),
+                                "Plot " + plotName + " corner 2", baseArena))
+                {
+
+                    return false;
+
+                }
 
                 Location minPoint = LocationSerializer.getLocation(minPointString);
                 Location maxPoint = LocationSerializer.getLocation(maxPointString);

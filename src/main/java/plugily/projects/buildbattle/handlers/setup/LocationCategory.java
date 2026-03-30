@@ -40,7 +40,7 @@ public class LocationCategory extends PluginLocationCategory {
 
         LocationItem starting = new LocationItem(getSetupInventory(),
                 new ItemBuilder(XMaterial.EMERALD_BLOCK.parseMaterial()), "Plot World",
-                "Set the location to \nvalidate the world with your plots! Make sure to use a location in the mid of all the plots!",
+                "Set the location to \nvalidate the world with your plots! Use a dedicated MyWorlds-managed game world, not one of the main 3 worlds.",
                 "startlocation");
         getItemList().add(starting);
         gui.setItem((getInventoryLine() * 9) + 2, starting);

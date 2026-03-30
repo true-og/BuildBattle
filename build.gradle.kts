@@ -46,6 +46,7 @@ repositories {
     maven { url = uri("https://maven.plugily.xyz/releases") }
     maven { url = uri("https://maven.plugily.xyz/snapshots") }
     maven { url = uri("https://repo.citizensnpcs.co/") }
+    maven { url = uri("https://ci.mg-dev.eu/plugin/repository/everything") }
     maven { url = uri("https://jitpack.io") }
 }
 
@@ -53,6 +54,7 @@ repositories {
 dependencies {
     compileOnly("org.purpurmc.purpur:purpur-api:1.19.4-R0.1-SNAPSHOT") // Declare Purpur API version to be packaged.
     compileOnly("org.jetbrains:annotations:23.0.0")
+    compileOnly("com.github.regix1:MyWorlds:v1.21.8-TEST2")
     compileOnly("net.citizensnpcs:citizensapi:2.0.26-SNAPSHOT") {
         exclude(group = "ch.ethz.globis.phtree", module = "phtree")
     }
