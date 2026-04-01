@@ -18,6 +18,7 @@ import plugily.projects.minigamesbox.classic.utils.configuration.ConfigUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -151,11 +152,14 @@ public class MyWorldsManager {
 
         boolean enableWorldInventories = plugin.getConfig().getBoolean("MyWorlds.Enable-World-Inventories", true);
         boolean enableWorldChat = plugin.getConfig().getBoolean("MyWorlds.Enable-World-Chat", true);
+        boolean inventoriesChanged = false;
+        boolean chatChanged = false;
         boolean changed = false;
 
         if (configuration.getBoolean("useWorldInventories") != enableWorldInventories) {
 
             configuration.set("useWorldInventories", enableWorldInventories);
+            inventoriesChanged = true;
             changed = true;
 
         }
@@ -163,6 +167,7 @@ public class MyWorldsManager {
         if (configuration.getBoolean("useWorldChatPermissions") != enableWorldChat) {
 
             configuration.set("useWorldChatPermissions", enableWorldChat);
+            chatChanged = true;
             changed = true;
 
         }
@@ -176,7 +181,7 @@ public class MyWorldsManager {
         try {
 
             configuration.save(configFile);
-            myWorlds.loadConfig();
+            applyRuntimeChanges(enableWorldInventories, enableWorldChat, inventoriesChanged, chatChanged);
             plugin.getDebugger().debug(
                     "[MyWorlds] Updated My_Worlds config: useWorldInventories={0}, useWorldChatPermissions={1}",
                     enableWorldInventories, enableWorldChat);
@@ -184,6 +189,49 @@ public class MyWorldsManager {
         } catch (IOException exception) {
 
             plugin.getLogger().warning("Failed to update My_Worlds/config.yml: " + exception.getMessage());
+
+        }
+
+    }
+
+    private void applyRuntimeChanges(boolean enableWorldInventories, boolean enableWorldChat,
+            boolean inventoriesChanged, boolean chatChanged)
+    {
+
+        if (inventoriesChanged) {
+
+            myWorlds.setUseWorldInventories(enableWorldInventories);
+
+        }
+
+        if (tryReloadMyWorldsConfig()) {
+
+            return;
+
+        }
+
+        if (chatChanged) {
+
+            MyWorlds.useWorldChatPermissions = enableWorldChat;
+            plugin.getLogger().warning(
+                    "My_Worlds does not expose loadConfig() on this version. useWorldChatPermissions was updated in config.yml, "
+                            + "but a My_Worlds/server restart may be required for the runtime listener state to match.");
+
+        }
+
+    }
+
+    private boolean tryReloadMyWorldsConfig() {
+
+        try {
+
+            Method loadConfigMethod = myWorlds.getClass().getMethod("loadConfig");
+            loadConfigMethod.invoke(myWorlds);
+            return true;
+
+        } catch (ReflectiveOperationException ignored) {
+
+            return false;
 
         }
 
