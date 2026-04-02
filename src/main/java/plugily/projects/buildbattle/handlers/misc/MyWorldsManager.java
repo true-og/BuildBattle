@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 
 public class MyWorldsManager {
 
-    private static final String MY_WORLDS_PLUGIN_NAME = "My_Worlds";
+    private static final String[] MY_WORLDS_PLUGIN_NAMES = { "My_Worlds", "MyWorlds" };
 
     private final Main plugin;
     private MyWorlds myWorlds;
@@ -41,10 +41,23 @@ public class MyWorldsManager {
 
     public boolean initialize() {
 
-        Plugin installedPlugin = plugin.getServer().getPluginManager().getPlugin(MY_WORLDS_PLUGIN_NAME);
-        if (!(installedPlugin instanceof MyWorlds) || !installedPlugin.isEnabled()) {
+        Plugin installedPlugin = null;
+        for (String name : MY_WORLDS_PLUGIN_NAMES) {
 
-            plugin.getLogger().severe("BuildBattle-OG requires My_Worlds to be installed and enabled.");
+            Plugin candidate = plugin.getServer().getPluginManager().getPlugin(name);
+            if (candidate instanceof MyWorlds && candidate.isEnabled()) {
+
+                installedPlugin = candidate;
+                break;
+
+            }
+
+        }
+
+        if (installedPlugin == null) {
+
+            plugin.getLogger()
+                    .severe("BuildBattle-OG requires MyWorlds (My_Worlds or MyWorlds) to be installed and enabled.");
             plugin.getServer().getPluginManager().disablePlugin(plugin);
             return false;
 
