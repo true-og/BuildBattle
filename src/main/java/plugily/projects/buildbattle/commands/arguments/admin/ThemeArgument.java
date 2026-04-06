@@ -22,7 +22,8 @@ package plugily.projects.buildbattle.commands.arguments.admin;
 
 import java.util.Locale;
 
-import org.bukkit.ChatColor;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.command.CommandSender;
 
 import plugily.projects.buildbattle.Main;
@@ -93,7 +94,8 @@ public final class ThemeArgument {
 
                 }
 
-                String themeName = ChatColor.stripColor(args[3]);
+                String themeName = PlainTextComponentSerializer.plainText()
+                        .serialize(LegacyComponentSerializer.legacySection().deserialize(args[3]));
                 ThemeManager themeManager = ((Main) registry.getPlugin()).getThemeManager();
 
                 switch (args[1].toLowerCase(Locale.ENGLISH)) {

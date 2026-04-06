@@ -20,7 +20,8 @@
 
 package plugily.projects.buildbattle.handlers.menu.registry.particles;
 
-import org.bukkit.ChatColor;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -64,9 +65,12 @@ public class ParticleRemoveMenu {
             Location location = map.getKey();
             ItemStack itemStack = new ItemBuilder(particleItem.getItemStack().clone()).removeLore()
                     .lore(new MessageBuilder("MENU_LOCATION").asKey().build(),
-                            ChatColor.GRAY + "  x: " + Math.round(location.getX()),
-                            ChatColor.GRAY + "  y: " + Math.round(location.getY()),
-                            ChatColor.GRAY + "  z: " + Math.round(location.getZ()))
+                            LegacyComponentSerializer.legacySection().serialize(
+                                    MiniMessage.miniMessage().deserialize("<gray>  x: " + Math.round(location.getX()))),
+                            LegacyComponentSerializer.legacySection().serialize(
+                                    MiniMessage.miniMessage().deserialize("<gray>  y: " + Math.round(location.getY()))),
+                            LegacyComponentSerializer.legacySection().serialize(
+                                    MiniMessage.miniMessage().deserialize("<gray>  z: " + Math.round(location.getZ()))))
                     .build();
             gui.addItem(new SimpleClickableItem(itemStack, event -> {
 

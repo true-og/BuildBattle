@@ -84,7 +84,7 @@ public class MyWorldsManager {
 
         }
 
-        WorldConfigStore.saveAll(myWorlds);
+        WorldConfigStore.saveAll();
         WorldInventory.detach(arenaWorlds);
         plugin.getDebugger().debug("[MyWorlds] Detached BuildBattle worlds from shared main-world inventories: {0}",
                 String.join(", ", arenaWorlds));

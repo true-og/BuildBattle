@@ -20,7 +20,8 @@
 
 package plugily.projects.buildbattle.handlers.themes;
 
-import org.bukkit.ChatColor;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.jetbrains.annotations.Nullable;
 
@@ -85,11 +86,11 @@ public class ThemeManager {
     public void loadThemes(boolean ignoreHolidays) {
 
         // Remove all colours from theme names
-        classicThemes.replaceAll(ChatColor::stripColor);
-        teamsThemes.replaceAll(ChatColor::stripColor);
-        GTBThemesEasy.replaceAll(ChatColor::stripColor);
-        GTBThemesMedium.replaceAll(ChatColor::stripColor);
-        GTBThemesHard.replaceAll(ChatColor::stripColor);
+        classicThemes.replaceAll(ThemeManager::stripLegacyColor);
+        teamsThemes.replaceAll(ThemeManager::stripLegacyColor);
+        GTBThemesEasy.replaceAll(ThemeManager::stripLegacyColor);
+        GTBThemesMedium.replaceAll(ThemeManager::stripLegacyColor);
+        GTBThemesHard.replaceAll(ThemeManager::stripLegacyColor);
 
         if (!ignoreHolidays && !plugin.getHolidayManager().getEnabledHolidays().isEmpty()) {
 
@@ -206,6 +207,13 @@ public class ThemeManager {
             }
 
         }
+
+    }
+
+    private static String stripLegacyColor(String text) {
+
+        return PlainTextComponentSerializer.plainText()
+                .serialize(LegacyComponentSerializer.legacySection().deserialize(text));
 
     }
 

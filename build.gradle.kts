@@ -54,7 +54,8 @@ repositories {
 dependencies {
     compileOnly("org.purpurmc.purpur:purpur-api:1.19.4-R0.1-SNAPSHOT") // Declare Purpur API version to be packaged.
     compileOnly("org.jetbrains:annotations:23.0.0")
-    compileOnly("com.github.regix1:MyWorlds:v1.21.8-TEST2")
+    compileOnly(files("libs/MyWorlds/MyWorlds-1.19.4-v1.jar"))
+    compileOnly("com.bergerkiller.bukkit:BKCommonLib:1.19.4-v2")
     compileOnly("net.citizensnpcs:citizensapi:2.0.26-SNAPSHOT") {
         exclude(group = "ch.ethz.globis.phtree", module = "phtree")
     }

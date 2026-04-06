@@ -20,7 +20,8 @@
 
 package plugily.projects.buildbattle.arena;
 
-import org.bukkit.ChatColor;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -391,10 +392,11 @@ public class ArenaEvents extends PluginArenaEvents {
         }
 
         // Citizens includes 1 more color before name so we removes all
-        customName = ChatColor.stripColor(customName);
+        customName = PlainTextComponentSerializer.plainText()
+                .serialize(LegacyComponentSerializer.legacySection().deserialize(customName));
 
-        if (!customName.equalsIgnoreCase(
-                ChatColor.stripColor(new MessageBuilder("IN_GAME_MESSAGES_PLOT_NPC_NAME").asKey().build())))
+        if (!customName.equalsIgnoreCase(PlainTextComponentSerializer.plainText().serialize(LegacyComponentSerializer
+                .legacySection().deserialize(new MessageBuilder("IN_GAME_MESSAGES_PLOT_NPC_NAME").asKey().build()))))
         {
 
             return;
