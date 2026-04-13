@@ -2,10 +2,13 @@ package plugily.projects.buildbattle.handlers.misc;
 
 import plugily.projects.buildbattle.Main;
 
-import javax.net.ssl.HttpsURLConnection;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
 import java.util.logging.Level;
 
@@ -16,6 +19,8 @@ import java.util.logging.Level;
  */
 public class HeadDatabaseManager {
 
+    private static final String HEADS_SOURCE_BASE_URL = "https://raw.githubusercontent.com/Plugily-Projects/online-services/refs/heads/master/buildbattle/headdatabase/raw/";
+
     private final Main plugin;
     private final ArrayList<String> headCatalog = new ArrayList<>(Arrays.asList("alphabet", "animals", "blocks",
             "decoration", "food-drinks", "humanoid", "humans", "miscellaneous", "monsters", "plants"));
@@ -23,32 +28,14 @@ public class HeadDatabaseManager {
     public HeadDatabaseManager(Main plugin) {
 
         this.plugin = plugin;
-        try (Scanner scanner = new Scanner(requestHeadFetch(null), "UTF-8").useDelimiter("\\A")) {
+        try {
 
-            String data = scanner.hasNext() ? scanner.next() : "";
-            File file = new File(plugin.getDataFolder().getPath() + "/heads/database/head_data.yml");
-            if (!file.exists()) {
+            Files.createDirectories(getDatabaseDirectory().toPath());
 
-                new File(plugin.getDataFolder().getPath() + "/heads/").mkdir();
-                new File(plugin.getDataFolder().getPath() + "/heads/database/").mkdir();
-                if (!file.createNewFile()) {
+        } catch (IOException exception) {
 
-                    plugin.getDebugger().debug(Level.WARNING,
-                            "Couldn't create heads folder! We must disable heads support.");
-                    return;
-
-                }
-
-            }
-
-            Files.write(file.toPath(), data.getBytes());
-            plugin.getDebugger().debug(Level.WARNING, "Fetched latest heads file from repository.");
-
-        } catch (IOException ignored) {
-
-            // ignore exceptions
             plugin.getDebugger().debug(Level.WARNING,
-                    "Couldn't access heads fetcher service or there is other problem! You should notify author!");
+                    "Couldn't create heads folder! We must disable heads support. Cause: {0}", exception.getMessage());
 
         }
 
@@ -94,108 +81,101 @@ public class HeadDatabaseManager {
 
     }
 
-    private InputStream requestHeadFetch(String head) {
-
-        try {
-
-            URL url = new URL("https://api.plugily.xyz/onlineservices/v1/fetch.php");
-            HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("User-Agent", "PlugilyProjectsOnlineServices/1.0");
-            conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-            conn.setRequestProperty("Accept-Charset", "UTF-8");
-            conn.setDoOutput(true);
-
-            OutputStream os = conn.getOutputStream();
-            if (head == null) {
-
-                os.write(("pass=onlineservice").getBytes("UTF-8"));
-
-            } else {
-
-                os.write(("pass=onlineservice&head=" + head).getBytes("UTF-8"));
-
-            }
-
-            os.flush();
-            os.close();
-            return conn.getInputStream();
-
-        } catch (IOException e) {
-
-            plugin.getDebugger().debug(Level.SEVERE, "Could not fetch heads from plugily.xyz api! Cause: {0} ({1})",
-                    new Object[]
-                    { e.getCause(), e.getMessage() });
-            return new InputStream() {
-
-                @Override
-                public int read() {
-
-                    return -1;
-
-                }
-
-            };
-
-        }
-
-    }
-
     private DownloadStatus demandHeadDownload(String head) {
 
-        File headFile = new File(plugin.getDataFolder() + "/heads/database/" + head + ".yml");
-        if (!headFile.exists() || !isExact(head, headFile)) {
+        File headFile = new File(getDatabaseDirectory(), head + ".yml");
+        String remoteData = downloadRemoteCategory(head);
+        if (remoteData == null) {
 
-            return writeFile(head);
+            if (headFile.exists()) {
 
-        }
-
-        return DownloadStatus.LATEST;
-
-    }
-
-    private boolean isExact(String head, File file) {
-
-        try (Scanner scanner = new Scanner(requestHeadFetch(head), "UTF-8").useDelimiter("\\A");
-                Scanner localScanner = new Scanner(file, "UTF-8").useDelimiter("\\A"))
-        {
-
-            String onlineData = scanner.hasNext() ? scanner.next() : "";
-            String localData = localScanner.hasNext() ? localScanner.next() : "";
-
-            return onlineData.equals(localData);
-
-        } catch (IOException ignored) {
-
-            return false;
-
-        }
-
-    }
-
-    private DownloadStatus writeFile(String head) {
-
-        try (Scanner scanner = new Scanner(requestHeadFetch(head), "UTF-8").useDelimiter("\\A")) {
-
-            String data = scanner.hasNext() ? scanner.next() : "";
-            try (OutputStreamWriter writer = new OutputStreamWriter(
-                    new FileOutputStream(plugin.getDataFolder().getPath() + "/heads/database/" + head + ".yml"),
-                    "UTF-8"))
-            {
-
-                writer.write(data);
+                plugin.getDebugger().debug(Level.WARNING,
+                        "Couldn't refresh heads category {0} from GitHub. Using cached local copy instead.", head);
+                return DownloadStatus.LATEST;
 
             }
 
-            return DownloadStatus.SUCCESS;
-
-        } catch (IOException ignored) {
-
-            plugin.getDebugger().debug(Level.WARNING,
-                    "Demanded head " + head + " cannot be downloaded! You should notify author!");
             return DownloadStatus.FAIL;
 
         }
+
+        if (!headFile.exists()) {
+
+            return writeFile(head, remoteData);
+
+        }
+
+        try {
+
+            String localData = Files.readString(headFile.toPath());
+            if (remoteData.equals(localData)) {
+
+                return DownloadStatus.LATEST;
+
+            }
+
+            return writeFile(head, remoteData);
+
+        } catch (IOException exception) {
+
+            plugin.getDebugger().debug(Level.WARNING,
+                    "Couldn't compare local head database for {0}. Re-downloading latest copy.", head);
+            return writeFile(head, remoteData);
+
+        }
+
+    }
+
+    private String downloadRemoteCategory(String head) {
+
+        try (InputStream inputStream = new URL(HEADS_SOURCE_BASE_URL + head + ".yml").openStream()) {
+
+            return new String(inputStream.readAllBytes());
+
+        } catch (IOException exception) {
+
+            plugin.getDebugger().debug(Level.SEVERE,
+                    "Could not fetch heads category {0} from GitHub raw! Cause: {1} ({2})", new Object[]
+                    { head, exception.getCause(), exception.getMessage() });
+            return null;
+
+        }
+
+    }
+
+    private DownloadStatus writeFile(String head, String data) {
+
+        Path targetPath = new File(getDatabaseDirectory(), head + ".yml").toPath();
+        Path tempPath = new File(getDatabaseDirectory(), head + ".tmp").toPath();
+        try {
+
+            Files.writeString(tempPath, data);
+            Files.move(tempPath, targetPath, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+            return DownloadStatus.SUCCESS;
+
+        } catch (IOException exception) {
+
+            try {
+
+                Files.deleteIfExists(tempPath);
+
+            } catch (IOException ignored) {
+
+                // ignored on cleanup
+
+            }
+
+            plugin.getDebugger().debug(Level.WARNING,
+                    "Demanded head {0} cannot be downloaded or stored! You should notify author!", head);
+            return DownloadStatus.FAIL;
+
+        }
+
+    }
+
+    private File getDatabaseDirectory() {
+
+        return new File(plugin.getDataFolder(), "heads/database");
 
     }
 

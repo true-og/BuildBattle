@@ -42,6 +42,8 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
@@ -51,6 +53,9 @@ import java.util.stream.Collectors;
  *         Created at 23.12.2018
  */
 public class PlayerHeadsRegistry {
+
+    private static final Pattern HEAD_ENTRY_PATTERN = Pattern.compile(
+            "\\{\\s*\"name\"\\s*:\\s*\"((?:\\\\.|[^\"\\\\])*)\"\\s*,\\s*\"value\"\\s*:\\s*\"((?:\\\\.|[^\"\\\\])*)\"\\s*}");
 
     private final Main plugin;
     private final Map<HeadsCategory, PaginatedFastInv> categories = new HashMap<>();
@@ -232,38 +237,14 @@ public class PlayerHeadsRegistry {
                     new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8)))
             {
 
-                String line;
-                while ((line = reader.readLine()) != null) {
+                String content = reader.lines().collect(Collectors.joining("\n"));
+                if (content.trim().startsWith("[")) {
 
-                    line = line.trim();
-                    if (line.isEmpty() || line.startsWith("#")) {
+                    loadHeadsFromJson(content, heads);
 
-                        continue;
+                } else {
 
-                    }
-
-                    int colonIndex = line.indexOf(": ");
-                    if (colonIndex == -1) {
-
-                        continue;
-
-                    }
-
-                    String key = line.substring(0, colonIndex);
-                    String value = line.substring(colonIndex + 2);
-                    if (value.startsWith("\"") && value.endsWith("\"")) {
-
-                        value = value.substring(1, value.length() - 1);
-
-                    }
-
-                    if (value.startsWith("'") && value.endsWith("'")) {
-
-                        value = value.substring(1, value.length() - 1);
-
-                    }
-
-                    heads.put(key, value);
+                    loadHeadsFromLegacyFlatFile(content, heads);
 
                 }
 
@@ -308,6 +289,124 @@ public class PlayerHeadsRegistry {
         plugin.getDebugger().debug("[System] [Plugin] Head textures loading " + name + " finished took ms"
                 + (System.currentTimeMillis() - secondStart));
         return playerHeads;
+
+    }
+
+    private void loadHeadsFromLegacyFlatFile(String content, Map<String, String> heads) {
+
+        for (String line : content.split("\\R")) {
+
+            line = line.trim();
+            if (line.isEmpty() || line.startsWith("#")) {
+
+                continue;
+
+            }
+
+            int colonIndex = line.indexOf(": ");
+            if (colonIndex == -1) {
+
+                continue;
+
+            }
+
+            String key = line.substring(0, colonIndex);
+            String value = line.substring(colonIndex + 2);
+            if (value.startsWith("\"") && value.endsWith("\"")) {
+
+                value = value.substring(1, value.length() - 1);
+
+            }
+
+            if (value.startsWith("'") && value.endsWith("'")) {
+
+                value = value.substring(1, value.length() - 1);
+
+            }
+
+            heads.put(key, value);
+
+        }
+
+    }
+
+    private void loadHeadsFromJson(String content, Map<String, String> heads) {
+
+        Matcher matcher = HEAD_ENTRY_PATTERN.matcher(content);
+        int duplicateIndex = 0;
+        while (matcher.find()) {
+
+            String key = unescapeJson(matcher.group(1));
+            String value = unescapeJson(matcher.group(2));
+            if (heads.containsKey(key)) {
+
+                key = key + " (dup) " + duplicateIndex++;
+
+            }
+
+            heads.put(key, value);
+
+        }
+
+    }
+
+    private String unescapeJson(String value) {
+
+        StringBuilder output = new StringBuilder(value.length());
+        for (int i = 0; i < value.length(); i++) {
+
+            char current = value.charAt(i);
+            if (current != '\\' || i + 1 >= value.length()) {
+
+                output.append(current);
+                continue;
+
+            }
+
+            char escaped = value.charAt(++i);
+            switch (escaped) {
+
+                case '"':
+                case '\\':
+                case '/':
+                    output.append(escaped);
+                    break;
+                case 'b':
+                    output.append('\b');
+                    break;
+                case 'f':
+                    output.append('\f');
+                    break;
+                case 'n':
+                    output.append('\n');
+                    break;
+                case 'r':
+                    output.append('\r');
+                    break;
+                case 't':
+                    output.append('\t');
+                    break;
+                case 'u':
+                    if (i + 4 < value.length()) {
+
+                        String unicode = value.substring(i + 1, i + 5);
+                        output.append((char) Integer.parseInt(unicode, 16));
+                        i += 4;
+                        break;
+
+                    }
+
+                    output.append('u');
+                    break;
+                default:
+                    output.append(escaped);
+                    break;
+
+            }
+
+        }
+
+        return output.toString();
 
     }
 
