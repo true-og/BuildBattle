@@ -73,6 +73,9 @@ tasks.shadowJar {
     exclude("io.github.miniplaceholders.*") // Exclude the MiniPlaceholders package from being shadowed.
     exclude("plugily/projects/minigamesbox/classic/utils/services/locale/LocaleService.class")
     exclude("plugily/projects/minigamesbox/classic/utils/services/locale/LocaleService$*.class")
+    exclude("plugily/projects/minigamesbox/classic/utils/services/ServiceRegistry.class")
+    exclude("plugily/projects/minigamesbox/classic/utils/services/UpdateChecker.class")
+    exclude("plugily/projects/minigamesbox/classic/utils/services/UpdateChecker$*.class")
     isEnableRelocation = true
     relocationPrefix = "${project.group}.shadow"
     relocate("com.zaxxer.hikari", "plugily.projects.buildbattle.database.hikari")

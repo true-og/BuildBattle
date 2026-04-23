@@ -5,6 +5,10 @@
 BuildBattle-OG / Guess The Build is a Minecraft minigame designed for small and big servers. This minigame is unique and very configurable,
 100% free and open source!
 
+## OG fork notes
+
+This fork has no outbound phone-home. Upstream Plugily service hooks (`api.plugily.xyz` ping, remote locale fetching, automatic error reporting) and the Spiget-backed update checker are stubbed out at build time via local class overrides. Bundled `Default` locale is always used; update notifications are disabled. bStats metrics are untouched. See [CHANGELOG.md](CHANGELOG.md) for details.
+
 There are different modes such as the classic BuildBattle-OG and the guess mode called Guess The Build. On the classic version the goal is to build the best you can on your own as solo or as team with unlimited team sizes! You must compete with other players in this building game. Who will be the best? On the guess mode you have to build whileas the other players are guessing the correct word according to your building which grants points to the players. The player with the most points (best guesses) wins. 
 Have fun using it! Leave a good rating if you really like it.
 
