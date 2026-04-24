@@ -2,7 +2,7 @@ name: BuildBattle-OG
 main: plugily.projects.buildbattle.Main
 authors: [ PlugilyProjects, Tigerpanzer_02, Tigerpanzer, Plajer, TomTheDeveloper ]
 version: ${version}
-softdepend: [ My_Worlds, MyWorlds, Vault, Citizens, PlaceholderAPI, Parties, Spigot-Party-API-PAF, PartyAndFriends, ViaVersion, ProtocolSupport ]
+softdepend: [ My_Worlds, MyWorlds, Citizens, PlaceholderAPI, Parties, Spigot-Party-API-PAF, PartyAndFriends, ViaVersion, ProtocolSupport ]
 api-version: ${apiVersion}
 
 commands:
