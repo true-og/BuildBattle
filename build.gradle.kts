@@ -12,6 +12,9 @@ extra["kotlinAttribute"] = Attribute.of("kotlin-tag", Boolean::class.javaObjectT
 
 val kotlinAttribute: Attribute<Boolean> by rootProject.extra
 
+val bkCommonLibJar = files("libs/BKCommonLib/BKCommonLib-1.19.4-v2.jar")
+val myWorldsJar = files("libs/MyWorlds/MyWorlds-1.19.4-v1.jar")
+
 /* --------------------------- JDK / Kotlin ---------------------------- */
 java {
     sourceCompatibility = JavaVersion.VERSION_17 // Compile with JDK 17 compatibility.
@@ -36,6 +39,8 @@ tasks.named<ProcessResources>("processResources") {
     inputs.properties(props) // Indicates to rerun if version changes.
     filesMatching("plugin.yml") { expand(props) }
     from("LICENSE.md") { into("/") } // Bundle licenses into jarfiles.
+    from("libs/BKCommonLib/LICENSE") { into("META-INF/licenses/BKCommonLib") }
+    from("libs/MyWorlds/LICENSE") { into("META-INF/licenses/MyWorlds") }
 }
 
 /* ---------------------------- Repos ---------------------------------- */
@@ -46,7 +51,6 @@ repositories {
     maven { url = uri("https://maven.plugily.xyz/releases") }
     maven { url = uri("https://maven.plugily.xyz/snapshots") }
     maven { url = uri("https://repo.citizensnpcs.co/") }
-    maven { url = uri("https://ci.mg-dev.eu/plugin/repository/everything") }
     maven { url = uri("https://jitpack.io") }
 }
 
@@ -54,8 +58,8 @@ repositories {
 dependencies {
     compileOnly("org.purpurmc.purpur:purpur-api:1.19.4-R0.1-SNAPSHOT") // Declare Purpur API version to be packaged.
     compileOnly("org.jetbrains:annotations:23.0.0")
-    compileOnly(files("libs/MyWorlds/MyWorlds-1.19.4-v1.jar"))
-    compileOnly("com.bergerkiller.bukkit:BKCommonLib:1.19.4-v2")
+    compileOnly(myWorldsJar)
+    compileOnly(bkCommonLibJar)
     compileOnly("net.citizensnpcs:citizensapi:2.0.26-SNAPSHOT") {
         exclude(group = "ch.ethz.globis.phtree", module = "phtree")
     }
