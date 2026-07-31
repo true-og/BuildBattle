@@ -118,25 +118,7 @@ public class ReconnectToMainWorldListener implements Listener {
 
     private World findMainWorld() {
 
-        for (String worldName : plugin.getConfig().getStringList("MyWorlds.Protected-Worlds")) {
-
-            World world = Bukkit.getWorld(worldName);
-            if (world != null) {
-
-                return world;
-
-            }
-
-        }
-
-        World world = Bukkit.getWorld("world");
-        if (world != null) {
-
-            return world;
-
-        }
-
-        return Bukkit.getWorlds().isEmpty() ? null : Bukkit.getWorlds().get(0);
+        return plugin.getMyWorldsManager().getMainWorld();
 
     }
 

@@ -20,7 +20,6 @@
 
 package plugily.projects.buildbattle.arena.states.build;
 
-import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import plugily.projects.buildbattle.arena.BaseArena;
@@ -77,7 +76,7 @@ public class InGameState extends PluginInGameState {
                     for (Player player : pluginArena.getPlayersLeft()) {
 
                         player.closeInventory();
-                        player.setGameMode(GameMode.CREATIVE);
+                        pluginArena.getPlugin().getBuilderCreativeManager().grantBuilderCreative(player);
                         VersionUtils.setCollidable(player, false);
 
                     }

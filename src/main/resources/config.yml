@@ -43,6 +43,16 @@ MyWorlds:
     - world
     - world_nether
     - world_the_end
+  # Days to keep a player's pre-arena return location on disk (0 = keep forever).
+  PreJoin-Location-Expiry-Days: 30
+
+# Compatibility notes (no options to set here):
+# - GameModeInventories-OG: builders get a creative exemption scoped to the arena
+#   worlds at runtime; do NOT grant regular players gamemodeinventories.toggle or
+#   gamemodeinventories.anywhere, and keep arena worlds OUT of its
+#   restrict_adventure_worlds list (guessers are put in adventure mode).
+# - Spawn-OG: keep arena worlds OUT of its login-safety.worlds list so reconnect
+#   handling stays with BuildBattle.
 
 
 Commands:

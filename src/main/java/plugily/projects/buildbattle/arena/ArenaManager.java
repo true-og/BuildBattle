@@ -58,7 +58,16 @@ public class ArenaManager extends PluginArenaManager {
 
         }
 
+        // Suspend GameModeInventories swapping before MiniGamesBox takes over
+        // this player's inventory and gamemode. Lifted again on arena leave, or
+        // immediately below when the join is refused.
+        plugin.getBuilderCreativeManager().enterArena(player);
         super.joinAttempt(player, arena);
+        if (!plugin.getArenaRegistry().isInArena(player)) {
+
+            plugin.getBuilderCreativeManager().revoke(player);
+
+        }
 
     }
 
@@ -105,6 +114,9 @@ public class ArenaManager extends PluginArenaManager {
         }
 
         super.leaveAttempt(player, arena);
+        // After the MiniGamesBox inventory restore, so GameModeInventories-OG
+        // cannot swap inventories mid-restore.
+        plugin.getBuilderCreativeManager().revoke(player);
         IUser user = plugin.getUserManager().getUser(player);
         user.setStatistic("LOCAL_POINTS", 0);
         user.setStatistic("LOCAL_POINTS_GTB", 0);

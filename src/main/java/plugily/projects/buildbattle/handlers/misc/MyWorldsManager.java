@@ -4,6 +4,7 @@ import com.bergerkiller.bukkit.mw.MyWorlds;
 import com.bergerkiller.bukkit.mw.WorldConfig;
 import com.bergerkiller.bukkit.mw.WorldConfigStore;
 import com.bergerkiller.bukkit.mw.WorldInventory;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
@@ -32,6 +33,7 @@ public class MyWorldsManager {
 
     private final Main plugin;
     private MyWorlds myWorlds;
+    private Set<String> configuredArenaWorlds;
 
     public MyWorldsManager(Main plugin) {
 
@@ -72,6 +74,7 @@ public class MyWorldsManager {
     public void synchronizeArenaWorldInventories() {
 
         Set<String> arenaWorlds = collectConfiguredArenaWorlds();
+        configuredArenaWorlds = arenaWorlds;
         if (arenaWorlds.isEmpty()) {
 
             return;
@@ -132,6 +135,75 @@ public class MyWorldsManager {
         }
 
         return validateArenaWorld(worldName, label, arena);
+
+    }
+
+    /**
+     * Whether the named world appears anywhere in the arenas.yml configuration
+     * (lobby, start, end or plot locations). Cached from the last inventory
+     * synchronization; computed on demand before that.
+     */
+    public boolean isConfiguredArenaWorld(@Nullable String worldName) {
+
+        if (worldName == null || worldName.isBlank()) {
+
+            return false;
+
+        }
+
+        Set<String> worlds = configuredArenaWorlds;
+        if (worlds == null) {
+
+            worlds = collectConfiguredArenaWorlds();
+            configuredArenaWorlds = worlds;
+
+        }
+
+        return worlds.contains(normalizeWorldName(worldName));
+
+    }
+
+    /**
+     * The world players are returned to when no pre-join location is known. Prefers
+     * MyWorlds' own main world (parity with TheHerobrine-OG), then the configured
+     * protected worlds, then the server default.
+     */
+    public @Nullable World getMainWorld() {
+
+        try {
+
+            World mainWorld = MyWorlds.getMainWorld();
+            if (mainWorld != null) {
+
+                return mainWorld;
+
+            }
+
+        } catch (Throwable throwable) {
+
+            plugin.getDebugger().debug("[MyWorlds] MyWorlds.getMainWorld() failed: {0}", throwable.getMessage());
+
+        }
+
+        for (String worldName : plugin.getConfig().getStringList("MyWorlds.Protected-Worlds")) {
+
+            World world = Bukkit.getWorld(worldName);
+            if (world != null) {
+
+                return world;
+
+            }
+
+        }
+
+        World world = Bukkit.getWorld("world");
+        if (world != null) {
+
+            return world;
+
+        }
+
+        return Bukkit.getWorlds().isEmpty() ? null : Bukkit.getWorlds().get(0);
 
     }
 

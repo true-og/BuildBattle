@@ -21,7 +21,6 @@
 package plugily.projects.buildbattle;
 
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Filter;
 import java.util.logging.LogRecord;
 import org.bukkit.Location;
@@ -42,8 +41,10 @@ import plugily.projects.buildbattle.commands.arguments.ArgumentsRegistry;
 import plugily.projects.buildbattle.handlers.LanguageMigrator;
 import plugily.projects.buildbattle.handlers.menu.OptionsRegistry;
 import plugily.projects.buildbattle.handlers.misc.BlacklistManager;
+import plugily.projects.buildbattle.handlers.misc.BuilderCreativeManager;
 import plugily.projects.buildbattle.handlers.misc.HeadDatabaseManager;
 import plugily.projects.buildbattle.handlers.misc.MyWorldsManager;
+import plugily.projects.buildbattle.handlers.misc.PreJoinLocationStore;
 import plugily.projects.buildbattle.handlers.misc.ReconnectToMainWorldListener;
 import plugily.projects.buildbattle.handlers.setup.SetupCategoryManager;
 import plugily.projects.buildbattle.handlers.themes.ThemeManager;
@@ -56,8 +57,6 @@ import plugily.projects.minigamesbox.classic.handlers.setup.categories.PluginSet
  */
 public class Main extends PluginMain {
 
-    private final ConcurrentHashMap<UUID, Location> preJoinLocations = new ConcurrentHashMap<>();
-
     private VoteItems voteItems;
     private HeadDatabaseManager headDatabaseManager;
     private ThemeManager themeManager;
@@ -68,6 +67,8 @@ public class Main extends PluginMain {
     private ArgumentsRegistry argumentsRegistry;
     private PlotMenuHandler plotMenuHandler;
     private MyWorldsManager myWorldsManager;
+    private PreJoinLocationStore preJoinLocationStore;
+    private BuilderCreativeManager builderCreativeManager;
 
     @TestOnly
     public Main() {
@@ -102,6 +103,7 @@ public class Main extends PluginMain {
 
         }
 
+        preJoinLocationStore = new PreJoinLocationStore(this);
         new PlaceholderInitializer(this);
         messageInitializer.registerMessages();
         new AdditionalValueInitializer(this);
@@ -145,6 +147,7 @@ public class Main extends PluginMain {
         BaseArena.init(this);
         new ArenaEvents(this);
         arenaManager = new ArenaManager(this);
+        builderCreativeManager = new BuilderCreativeManager(this);
         arenaRegistry.registerArenas();
         new ReconnectToMainWorldListener(this);
         getCommand("hub").setExecutor(new HubCommand(this));
@@ -202,15 +205,53 @@ public class Main extends PluginMain {
 
     }
 
+    public BuilderCreativeManager getBuilderCreativeManager() {
+
+        return builderCreativeManager;
+
+    }
+
     public void savePreJoinLocation(Player player) {
 
-        preJoinLocations.put(player.getUniqueId(), player.getLocation().clone());
+        if (preJoinLocationStore != null) {
+
+            preJoinLocationStore.put(player.getUniqueId(), player.getLocation());
+
+        }
 
     }
 
     public Location getAndRemovePreJoinLocation(UUID playerId) {
 
-        return preJoinLocations.remove(playerId);
+        if (preJoinLocationStore == null) {
+
+            return null;
+
+        }
+
+        // Pulls the stored world back in through MyWorlds when it is unloaded.
+        Location location = preJoinLocationStore.getOrLoadWorld(playerId);
+        preJoinLocationStore.remove(playerId);
+        return location;
+
+    }
+
+    @Override
+    public void onDisable() {
+
+        if (builderCreativeManager != null) {
+
+            builderCreativeManager.revokeAll();
+
+        }
+
+        if (preJoinLocationStore != null) {
+
+            preJoinLocationStore.shutdown();
+
+        }
+
+        super.onDisable();
 
     }
 

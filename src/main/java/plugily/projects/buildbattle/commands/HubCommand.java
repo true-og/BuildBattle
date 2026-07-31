@@ -1,6 +1,5 @@
 package plugily.projects.buildbattle.commands;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.command.Command;
@@ -56,6 +55,7 @@ public class HubCommand implements CommandExecutor {
 
             }
 
+            plugin.getBuilderCreativeManager().revoke(player);
             send(player, "&aReturned to your previous location.");
             return true;
 
@@ -83,6 +83,7 @@ public class HubCommand implements CommandExecutor {
 
         }
 
+        plugin.getBuilderCreativeManager().revoke(player);
         send(player, "&aReturned to the hub.");
         return true;
 
@@ -90,25 +91,7 @@ public class HubCommand implements CommandExecutor {
 
     private World findMainWorld() {
 
-        for (String worldName : plugin.getConfig().getStringList("MyWorlds.Protected-Worlds")) {
-
-            World world = Bukkit.getWorld(worldName);
-            if (world != null) {
-
-                return world;
-
-            }
-
-        }
-
-        World world = Bukkit.getWorld("world");
-        if (world != null) {
-
-            return world;
-
-        }
-
-        return Bukkit.getWorlds().isEmpty() ? null : Bukkit.getWorlds().get(0);
+        return plugin.getMyWorldsManager().getMainWorld();
 
     }
 

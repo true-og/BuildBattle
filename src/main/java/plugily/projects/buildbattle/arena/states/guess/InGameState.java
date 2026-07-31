@@ -21,7 +21,6 @@
 package plugily.projects.buildbattle.arena.states.guess;
 
 import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
@@ -91,7 +90,7 @@ public class InGameState extends PluginInGameState {
                             () -> pluginArena.getCurrentBuilders().forEach(player ->
                             {
 
-                                player.setGameMode(GameMode.CREATIVE);
+                                pluginArena.getPlugin().getBuilderCreativeManager().grantBuilderCreative(player);
                                 pluginArena.getPlayersLeft().forEach(
                                         ingamePlayer -> VersionUtils.hidePlayer(getPlugin(), player, ingamePlayer));
                                 pluginArena.getPlugin().getSpecialItemManager().getSpecialItem("OPTIONS_MENU")
