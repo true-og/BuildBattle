@@ -2,7 +2,10 @@ name: BuildBattle-OG
 main: plugily.projects.buildbattle.Main
 authors: [ PlugilyProjects, Tigerpanzer_02, Tigerpanzer, Plajer, TomTheDeveloper ]
 version: ${version}
-softdepend: [ My_Worlds, MyWorlds, GameModeInventories-OG, Spawn-OG, Citizens, PlaceholderAPI, Parties, Spigot-Party-API-PAF, PartyAndFriends, ViaVersion, ProtocolSupport ]
+description: Building competition minigame with classic and Guess The Build modes.
+# My_Worlds and MyWorlds are both soft depends on purpose: MyWorldsManager accepts either plugin name,
+# so hard depending on one breaks servers running the other fork.
+softdepend: [ My_Worlds, MyWorlds, GameModeInventories-OG, Spawn-OG, Utilities-OG, Citizens, PlaceholderAPI, Parties, Spigot-Party-API-PAF, PartyAndFriends, ViaVersion, ProtocolSupport ]
 api-version: ${apiVersion}
 
 commands:
@@ -16,8 +19,13 @@ commands:
     aliases: [ bba, buildbadmin ]
   hub:
     description: Leave the BuildBattle lobby or game and return to the main world.
+    usage: /<command>
 
 permissions:
+  # Every node below is one the plugin actually checks, verified against both this fork's sources and
+  # the shaded MiniGamesBox-Classic. Do not re-add buildbattle.admin.stopgame, .addsign, .plotwand,
+  # .create, .forcestart.theme, .supervotes.manage or buildbattle.command.bypass: nothing reads them.
+  # The real nodes for those are .admin.stop, .admin.locwand, .admin.setup and .command.override.
   buildbattle.admin.*:
     default: op
     children:
@@ -25,20 +33,44 @@ permissions:
       buildbattle.heads: true
       buildbattle.updatenotify: true
       buildbattle.admin: true
+      # MiniGamesBox-Classic base arguments.
+      buildbattle.admin.setup: true
+      buildbattle.admin.delete: true
+      buildbattle.admin.list: true
+      buildbattle.admin.reload: true
+      buildbattle.admin.stop: true
+      buildbattle.admin.forcestart: true
+      buildbattle.admin.locwand: true
+      buildbattle.admin.teleport: true
+      buildbattle.admin.spychat: true
+      buildbattle.admin.statistic: true
+      buildbattle.admin.statistic.others: true
+      buildbattle.admin.locale: true
+      buildbattle.admin.locales: true
+      buildbattle.admin.kitfile: true
+      buildbattle.admin.placeholders: true
+      buildbattle.admin.leaderboard.manage: true
       buildbattle.admin.sign.create: true
       buildbattle.admin.sign.break: true
-      buildbattle.admin.stopgame: true
+      # BuildBattle-OG arguments.
       buildbattle.admin.addnpc: true
-      buildbattle.admin.addsign: true
-      buildbattle.admin.reload: true
-      buildbattle.admin.forcestart: true
-      buildbattle.admin.forcestart.theme: true
       buildbattle.admin.addplot: true
       buildbattle.admin.removeplot: true
-      buildbattle.admin.plotwand: true
-      buildbattle.admin.list: true
-      buildbattle.admin.delete: true
-      buildbattle.admin.create: true
       buildbattle.admin.settheme: true
-      buildbattle.admin.supervotes.manage: true
-      buildbattle.command.bypass: true
+      buildbattle.admin.theme: true
+      buildbattle.admin.forceplay: true
+      buildbattle.command.selectplot: true
+      # Bypasses in-game command blocking (Block.In-Game.Commands in config.yml).
+      buildbattle.command.override: true
+
+  # Gameplay nodes. Declared so they show up in permission tooling; undeclared nodes silently
+  # default to OP, which is how these ended up looking broken to server owners.
+  buildbattle.arenas:
+    description: Open the arena selector with /bb arenas.
+    default: op
+  buildbattle.command.selectkit:
+    description: Select a kit.
+    default: op
+  buildbattle.fullgames:
+    description: Join arenas that are already full.
+    default: op

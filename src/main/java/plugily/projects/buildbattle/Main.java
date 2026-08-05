@@ -24,6 +24,7 @@ import java.util.UUID;
 import java.util.logging.Filter;
 import java.util.logging.LogRecord;
 import org.bukkit.Location;
+import org.bukkit.command.PluginCommand;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.TestOnly;
 import plugily.projects.buildbattle.arena.ArenaEvents;
@@ -39,6 +40,7 @@ import plugily.projects.buildbattle.boot.PlaceholderInitializer;
 import plugily.projects.buildbattle.commands.HubCommand;
 import plugily.projects.buildbattle.commands.arguments.ArgumentsRegistry;
 import plugily.projects.buildbattle.handlers.LanguageMigrator;
+import plugily.projects.buildbattle.handlers.language.TrueOGLanguageManager;
 import plugily.projects.buildbattle.handlers.menu.OptionsRegistry;
 import plugily.projects.buildbattle.handlers.misc.BlacklistManager;
 import plugily.projects.buildbattle.handlers.misc.BuilderCreativeManager;
@@ -48,6 +50,7 @@ import plugily.projects.buildbattle.handlers.misc.PreJoinLocationStore;
 import plugily.projects.buildbattle.handlers.misc.ReconnectToMainWorldListener;
 import plugily.projects.buildbattle.handlers.setup.SetupCategoryManager;
 import plugily.projects.buildbattle.handlers.themes.ThemeManager;
+import plugily.projects.minigamesbox.api.handlers.language.ILanguageManager;
 import plugily.projects.minigamesbox.classic.PluginMain;
 import plugily.projects.minigamesbox.classic.handlers.setup.SetupInventory;
 import plugily.projects.minigamesbox.classic.handlers.setup.categories.PluginSetupCategoryManager;
@@ -69,6 +72,7 @@ public class Main extends PluginMain {
     private MyWorldsManager myWorldsManager;
     private PreJoinLocationStore preJoinLocationStore;
     private BuilderCreativeManager builderCreativeManager;
+    private ILanguageManager languageManager;
 
     @TestOnly
     public Main() {
@@ -93,12 +97,27 @@ public class Main extends PluginMain {
 
         new LanguageMigrator(this);
         MessageInitializer messageInitializer = new MessageInitializer(this);
+        // Must precede super.onEnable(): SignManager caches Signs.Lines and the
+        // game-state names into
+        // final fields while the base plugin enables, and never re-reads them (not even
+        // on /bba reload).
+        installTrueOGColorizer();
         super.onEnable();
         getDebugger().debug("[System] [Plugin] Initialization start");
         arenaRegistry = new ArenaRegistry(this);
         myWorldsManager = new MyWorldsManager(this);
         if (!myWorldsManager.initialize()) {
 
+            // super.onEnable() already ran, so a bare return would leave the plugin marked
+            // enabled with no arenas, commands or listeners registered. Fail fast instead.
+            // Note this runs onDisable() re-entrantly, inside onEnable(). That is safe
+            // today only
+            // because registerArenas() has not run yet, so onDisable()'s loop over the
+            // arena
+            // registry is empty and never dereferences the still-null arenaManager. If
+            // arenas ever
+            // become populated earlier, move this check above super.onEnable() instead.
+            getServer().getPluginManager().disablePlugin(this);
             return;
 
         }
@@ -110,6 +129,42 @@ public class Main extends PluginMain {
         initializePluginClasses();
         getDebugger().debug("Full {0} plugin enabled", getName());
         getDebugger().debug("[System] [Plugin] Initialization finished took {0}ms", System.currentTimeMillis() - start);
+
+    }
+
+    // Route language values through TrueOG's colorizer when Utilities-OG is
+    // installed. It is a
+    // compileOnly dependency, so only build the decorator once its classes are
+    // known present.
+    // Every plugin is loaded before any is enabled, so this check is already valid
+    // pre-onEnable.
+    private void installTrueOGColorizer() {
+
+        if (getServer().getPluginManager().getPlugin("Utilities-OG") == null) {
+
+            getLogger().info("Utilities-OG is not installed, so messages keep their default formatting.");
+            return;
+
+        }
+
+        // Delegate resolved lazily: PluginMain has not built its LanguageManager yet at
+        // this point.
+        languageManager = new TrueOGLanguageManager(super::getLanguageManager);
+
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <p>
+     * Returns the colorizing decorator once {@link #installTrueOGColorizer()} has
+     * run, which is before {@code super.onEnable()} so that values the base plugin
+     * caches at startup (join sign lines, game-state names) are already colorized.
+     */
+    @Override
+    public ILanguageManager getLanguageManager() {
+
+        return languageManager != null ? languageManager : super.getLanguageManager();
 
     }
 
@@ -126,8 +181,7 @@ public class Main extends PluginMain {
                 String msg = record.getMessage();
                 // Raw locale records contain color codes and concatenated values,
                 // so match them by substring rather than prefix.
-                if (msg != null && (msg.contains("Loaded locale")
-                        || msg.contains("You are using some fork that was not tested by us")))
+                if (msg != null && msg.contains("Loaded locale"))
                     return false;
                 return previous == null || previous.isLoggable(record);
 
@@ -150,7 +204,17 @@ public class Main extends PluginMain {
         builderCreativeManager = new BuilderCreativeManager(this);
         arenaRegistry.registerArenas();
         new ReconnectToMainWorldListener(this);
-        getCommand("hub").setExecutor(new HubCommand(this));
+        PluginCommand hubCommand = getCommand("hub");
+        if (hubCommand != null) {
+
+            hubCommand.setExecutor(new HubCommand(this));
+
+        } else {
+
+            getLogger().warning("The 'hub' command is missing from plugin.yml, so /hub will not work.");
+
+        }
+
         myWorldsManager.synchronizeArenaWorldInventories();
         getSignManager().loadSigns();
         getSignManager().updateSigns();

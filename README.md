@@ -1,23 +1,199 @@
-![](https://images.plugily.xyz/banner/display.php?id=BuildBattle-OG)
+# BuildBattle-OG
 
-# BuildBattle-OG / Guess The Build [![Maven Repository](https://maven.plugily.xyz/api/badge/latest/releases/plugily/projects/buildbattle?color=40c14a&name=Maven&prefix=v)](https://maven.plugily.xyz/#/releases/plugily/projects/buildbattle) [![JavaDoc Repository](https://maven.plugily.xyz/api/badge/latest/releases/plugily/projects/buildbattle?color=40c14a&name=JavaDoc&prefix=v)](https://maven.plugily.xyz/javadoc/releases/plugily/projects/buildbattle/latest) [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=Plugily-Projects_BuildBattle&metric=sqale_rating)](https://sonarcloud.io/summary/overall?id=Plugily-Projects_BuildBattle) [![Discord](https://img.shields.io/discord/345628548716822530.svg?color=7289DA&style=for-the-badge&logo=discord)](https://discord.plugily.xyz) [![Patreon](    https://img.shields.io/badge/Patreon-F96854?style=for-the-badge&logo=patreon&logoColor=white)](https://patreon.com/plugily)
+TrueOG Network's fork of [Plugily-Projects/BuildBattle](https://github.com/Plugily-Projects/BuildBattle) — a
+building competition minigame for Purpur `1.19.4`, using `MyWorlds` for arena world management.
 
-BuildBattle-OG / Guess The Build is a Minecraft minigame designed for small and big servers. This minigame is unique and very configurable,
-100% free and open source!
+Current version: `5.1.5` ([changelog](CHANGELOG.md)).
+
+Two game modes ship in the box. In **classic** mode players build on their own plot against a theme, then vote
+on each other's builds. In **Guess The Build** one player builds while everyone else races to guess the theme
+in chat for points.
 
 ## OG fork notes
 
-This fork avoids outside service calls for updates, translations, and error reports. It uses the bundled `Default` locale and adds `/hub` plus reconnect support so players can get back to the main world from arenas more reliably. See [CHANGELOG.md](CHANGELOG.md) for details.
+This fork makes no outside service calls. Upstream's update checker, remote translation fetching, error
+reporting and metrics are all stubbed out, so the bundled `Default` locale is always used and nothing phones
+home. It also adds `/hub` and reconnect handling so players reliably get back to the main world from an arena,
+and integrates with the rest of the TrueOG plugin set (see [Integrations](#integrations)).
 
-There are different modes such as the classic BuildBattle-OG and the guess mode called Guess The Build. On the classic version the goal is to build the best you can on your own as solo or as team with unlimited team sizes! You must compete with other players in this building game. Who will be the best? On the guess mode you have to build whileas the other players are guessing the correct word according to your building which grants points to the players. The player with the most points (best guesses) wins. 
-Have fun using it! Leave a good rating if you really like it.
+## Requirements
 
-## Want to contribute in this project?
+- Purpur `1.19.4`
+- `MyWorlds` (either the `MyWorlds` or the `My_Worlds` fork — both plugin names are accepted)
+- `BKCommonLib` (MyWorlds' own dependency)
 
-[**💣 Issues Reporting (Discord)**](https://discordapp.com/invite/UXzUdTP)
-[**❤ Make Donation**](https://www.paypal.me/plugilyprojects)
+Optional, integrated when present: `Utilities-OG`, `Chat-OG`, `GameModeInventories-OG`, `Spawn-OG`,
+`Citizens`, `PlaceholderAPI`, `ViaVersion`.
+
+## Quick Setup
+
+1. Drop the jar in `plugins/` and start the server once to generate `plugins/BuildBattle-OG/`.
+2. Create your arena worlds and register them with MyWorlds. Name them to the Chat-OG convention —
+   `BB1-map` for the game world and `BB1-hub` for its lobby (see [World naming](#world-naming)).
+3. Add your main overworld/nether/end to `MyWorlds.Protected-Worlds` in `config.yml` so arenas can never be
+   created there.
+4. Run `/bba setup create <arena>` and follow the setup inventory to place the lobby, start and end
+   locations. Use `/bba setup edit <arena>` to reopen it later.
+5. Use `/bba addplot <arena>` with the location wand to mark each build plot.
+6. Set `/bba settheme <theme>`, or leave the bundled `themes.yml` list in place.
+7. Run `/bba reload`, then join with `/bb join <arena>`.
+
+## World naming
+
+Arena worlds must be named `BB<n>-<map>` and their lobby worlds `BB<n>-hub`, for example `BB1-map` and
+`BB1-hub`. Chat-OG resolves a world to a multi-world game by that `<letters><digits>-` prefix and keys its
+per-game Discord channel off it, so the `BB` prefix must also exist under `discord.games` in **Chat-OG's**
+`config.yml`. Worlds named any other way simply stay in global chat — everything else still works.
+
+> **Upgrading from 5.1.4 or earlier:** the bundled `arenas.yml` template changed from `bb_lobby` / `bb_game_1`
+> to `BB1-hub` / `BB1-map`. Existing arenas keep whatever names they already have; changing the template does
+> not migrate them. To adopt the convention, rename the world folders and update both `arenas.yml` and your
+> MyWorlds configuration to match.
+
+## Configuration
+
+`config.yml` holds the fork-specific `MyWorlds` block:
+
+```yaml
+MyWorlds:
+  # BuildBattle requires My_Worlds and will enable these MyWorlds settings on startup.
+  Enable-World-Inventories: true
+  Enable-World-Chat: true
+  # BuildBattle arenas, plots and lobby locations are blocked from these worlds.
+  Protected-Worlds:
+    - world
+    - world_nether
+    - world_the_end
+  # Days to keep a player's pre-arena return location on disk (0 = keep forever).
+  PreJoin-Location-Expiry-Days: 30
+```
+
+Arenas live in `arenas.yml`:
+
+```yaml
+instances:
+  default:
+    lobbylocation: BB1-hub,-1.0,80.0,7.0,0.0,0.0
+    startlocation: BB1-map,-1.0,80.0,7.0,0.0,0.0
+    endlocation: BB1-hub,-1.0,80.0,7.0,0.0,0.0
+    minimumplayers: 2
+    maximumplayers: 10
+    plotmembersize: 1
+    mapname: mapname
+    world: BB1-map
+    # classic (deprecated: solo), guess_the_build
+    gametype: classic
+    isdone: false
+    signs: {}
+    plots: {}
+```
+
+Themes are in `themes.yml`, messages in `language.yml`, and per-player statistics use `mysql.yml` when
+`Database.Enabled` is on.
+
+## Integrations
+
+| Plugin | Effect when installed |
+|--------|-----------------------|
+| `MyWorlds` / `My_Worlds` | **Required.** Arena world management, per-world inventories and chat. |
+| `Utilities-OG` | `language.yml` values containing a MiniMessage tag or the `&*` rainbow code render through TrueOG's colorizer, enabling `<#rrggbb>` hex, `<gradient:...>`, named colours and decorations. Plain `&`-coded values are passed through byte-for-byte, so nothing shipped changes appearance. Without the plugin, all values keep their default formatting. |
+| `Chat-OG` | Arena chat is scoped per world and mirrored to the game's Discord channel, provided worlds follow the [naming convention](#world-naming) and `discord.games.BB` exists in Chat-OG's config. |
+| `GameModeInventories-OG` | Builders get a creative exemption scoped to arena worlds at runtime. Do **not** grant regular players `gamemodeinventories.toggle` or `gamemodeinventories.anywhere`, and keep arena worlds **out** of `restrict_adventure_worlds` — guessers are put in adventure mode. |
+| `Spawn-OG` | Keep arena worlds **out** of its `login-safety.worlds` list so reconnect handling stays with BuildBattle-OG. |
+| `Citizens` | Enables `/bba addnpc` for plot NPCs. |
+| `PlaceholderAPI` | Exposes arena placeholders to other plugins. |
+
+## Commands
+
+`/bb` (aliases `buildbattle`, `buildb`) and `/bba` (aliases `buildbattleadmin`, `buildbadmin`) each print
+their own help listing. The tables below cover the arguments this fork defines plus the most-used ones
+inherited from MiniGamesBox.
+
+### Player Commands
+
+| Command | Permission | Description |
+|---------|------------|-------------|
+| `/bb join <arena>` | — | Join an arena |
+| `/bb randomjoin` | — | Join any arena with room |
+| `/bb leave` | — | Leave the current arena |
+| `/bb arenas` | `buildbattle.arenas` | Open the arena selector |
+| `/bb menu` | — | Open the plot options menu |
+| `/bb guess <word>` | — | Submit a Guess The Build guess |
+| `/bb selectplot` | `buildbattle.command.selectplot` | Select the plot you are standing in |
+| `/bb stats` | — | Show your statistics |
+| `/bb top [statistic]` | — | Show the leaderboard |
+| `/hub` | — | Leave the arena or lobby and return to the main world |
+
+### Admin Commands
+
+| Command | Permission | Description |
+|---------|------------|-------------|
+| `/bba setup create <arena>` | `buildbattle.admin.setup` | Create a new arena |
+| `/bba setup edit <arena>` | `buildbattle.admin.setup` | Open the arena setup inventory |
+| `/bba delete <arena>` | `buildbattle.admin.delete` | Delete an arena |
+| `/bba list` | `buildbattle.admin.list` | List arenas and their states |
+| `/bba reload` | `buildbattle.admin.reload` | Reload configuration |
+| `/bba stop` | `buildbattle.admin.stop` | Stop the running game |
+| `/bba forcestart` | `buildbattle.admin.forcestart` | Force the game to start |
+| `/bba forceplay <arena> <theme>` | `buildbattle.admin.forceplay` | Force an arena to play a theme |
+| `/bba settheme <theme>` | `buildbattle.admin.settheme` | Set the current arena's theme |
+| `/bba theme [add/remove] [gameType] [theme]` | `buildbattle.admin.theme` | Manage the theme list |
+| `/bba addplot <arena>` | `buildbattle.admin.addplot` | Add a build plot using the location wand |
+| `/bba removeplot <arena> <plot ID>` | `buildbattle.admin.removeplot` | Remove a build plot |
+| `/bba addnpc` | `buildbattle.admin.addnpc` | Place a plot NPC (requires Citizens) |
+| `/bba locwand` | `buildbattle.admin.locwand` | Get the plot selection wand |
+| `/bba tp <arena/worldName> [location type]` | `buildbattle.admin.teleport` | Teleport to an arena location |
+| `/bba spychat` | `buildbattle.admin.spychat` | Toggle arena chat spying |
+| `/bba statistic <adjust/set> <statistic> <amount> [player]` | `buildbattle.admin.statistic` | Adjust a player's statistic (`buildbattle.admin.statistic.others` for `[player]`) |
+
+## Permissions
+
+### Administration
+
+`buildbattle.admin.*` (default OP) grants every node in the Admin Commands table above, plus:
+
+| Permission | Default | Description |
+|------------|---------|-------------|
+| `buildbattle.admin` | OP | Base administrative access |
+| `buildbattle.admin.sign.create` | OP | Create BuildBattle join signs |
+| `buildbattle.admin.sign.break` | OP | Break BuildBattle join signs |
+| `buildbattle.admin.statistic.others` | OP | Adjust another player's statistics |
+| `buildbattle.admin.locale` / `.locales` | OP | Inspect and switch locales |
+| `buildbattle.admin.kitfile` | OP | Manage kit files |
+| `buildbattle.admin.placeholders` | OP | Check placeholder resolution |
+| `buildbattle.admin.leaderboard.manage` | OP | Manage leaderboard holograms |
+| `buildbattle.command.override` | OP | Bypass in-game command blocking (`Block.In-Game.Commands`) |
+| `buildbattle.updatenotify` | OP | Update notifications (inert in this fork) |
+
+### Gameplay
+
+| Permission | Default | Description |
+|------------|---------|-------------|
+| `buildbattle.command.selectplot` | OP | Select the plot you are standing in |
+| `buildbattle.particles` | OP | Use the particle menu |
+| `buildbattle.heads` | OP | Use the player-heads menu (set per entry in `heads/mainmenu.yml`) |
+| `buildbattle.arenas` | OP | Open the arena selector |
+| `buildbattle.fullgames` | OP | Join arenas that are already full |
+| `buildbattle.join.<arena>` | OP | Join a specific arena, when per-arena join permissions are enabled |
+
+Point, voting and experience multipliers are configured by permission node in `permissions.yml`. Biome menu
+entries use `biomes.VIP` by default, configurable in `biomes.yml`.
+
+## Building
+
+```bash
+git clone --recursive https://github.com/true-og/BuildBattle-OG
+cd BuildBattle-OG
+./gradlew build
+```
+
+If you cloned without `--recursive`, run `./bootstrap.sh` first. The shaded plugin jar lands in
+`build/libs/BuildBattle-OG-<version>.jar`.
 
 # Credits
+
+BuildBattle-OG is a fork of [Plugily-Projects/BuildBattle](https://github.com/Plugily-Projects/BuildBattle) by
+Tigerpanzer_02, Plajer, TomTheDeveloper and contributors, distributed under the GPLv3.
 
 ## Open Source Libraries
 
@@ -28,24 +204,7 @@ Have fun using it! Leave a good rating if you really like it.
 | [HikariCP](https://github.com/brettwooldridge/HikariCP)     | [brettwooldridge](https://github.com/brettwooldridge) | [Apache License 2.0](https://github.com/brettwooldridge/HikariCP/blob/dev/LICENSE) |
 | [Commons Box](https://github.com/Plajer/Commons-Box)        | [Plajer](https://github.com/Plajer)                   | [GPLv3](https://github.com/Plajer/Commons-Box/blob/master/LICENSE.md)              |
 
-## Open Source Licenses
+## Attributions
 
-#### Code Whale
-
-<img src="https://poeditor.com/public/images/logo/logo_head_500_transparent.png" alt="jetbrains logo" width="150"/>
-
-Thanks to Code Whale for Open Source license for POEditor project, so we are able to have locales.
-
-#### Minecraft Heads
-
-[![https://minecraft-heads.com/](https://images.minecraft-heads.com/banners/minecraft-heads_leaderboard_728x90.png)](https://minecraft-heads.com/)
-
-Thanks to Minecraft Heads to let us use the Name and Textures of the heads to provide you a better heads experience ingame.
-
-## Contributors
-
-<a href="https://github.com/Plugily-Projects/BuildBattle/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=Plugily-Projects/BuildBattle" />
-</a>
-
-<img align="right" src="https://i.imgur.com/EmFfDXN.png">
+Thanks to Code Whale for the Open Source POEditor license behind upstream's locales, and to
+[Minecraft Heads](https://minecraft-heads.com/) for the head names and textures used in the heads menu.

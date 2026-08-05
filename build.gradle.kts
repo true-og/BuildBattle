@@ -27,11 +27,20 @@ java {
 /* ----------------------------- Metadata ------------------------------ */
 group = "plugily.projects"
 
-version = "5.1.4"
+version = "5.1.5"
 
-description = "BuildBattle-OG" // Declare plugin version (will be in .jar).
+description = "BuildBattle-OG" // Declare plugin description.
 
 val apiVersion = "1.19" // Declare minecraft server target version.
+
+// Harvest every upstream license shipped alongside a vendored jar in libs/, so adding a library does
+// not also require editing this file.
+val vendoredLicenseFiles =
+    fileTree("libs") {
+        include("**/LICENSE", "**/LICENSE.*", "**/License", "**/License.*", "**/COPYING", "**/COPYING.*")
+        include("**/NOTICE", "**/NOTICE.*")
+        exclude("**/build/**", "**/.git/**")
+    }
 
 /* ----------------------------- Resources ----------------------------- */
 tasks.named<ProcessResources>("processResources") {
@@ -39,8 +48,6 @@ tasks.named<ProcessResources>("processResources") {
     inputs.properties(props) // Indicates to rerun if version changes.
     filesMatching("plugin.yml") { expand(props) }
     from("LICENSE.md") { into("/") } // Bundle licenses into jarfiles.
-    from("libs/BKCommonLib/LICENSE") { into("META-INF/licenses/BKCommonLib") }
-    from("libs/MyWorlds/LICENSE") { into("META-INF/licenses/MyWorlds") }
 }
 
 /* ---------------------------- Repos ---------------------------------- */
@@ -48,6 +55,17 @@ repositories {
     mavenCentral() // Import the Maven Central Maven Repository.
     gradlePluginPortal() // Import the Gradle Plugin Portal Maven Repository.
     maven { url = uri("https://repo.purpurmc.org/snapshots") } // Import the PurpurMC Maven Repository.
+    maven { url = uri("file://${System.getProperty("user.home")}/.m2/repository") }
+    System.getProperty("SELF_MAVEN_LOCAL_REPO")?.let { // TrueOG Bootstrap mavenLocal().
+        val dir = file(it)
+        if (dir.isDirectory) {
+            println("Using SELF_MAVEN_LOCAL_REPO at: $it")
+            maven { url = uri("file://${dir.absolutePath}") }
+        } else {
+            logger.error("TrueOG Bootstrap not found, defaulting to ~/.m2 for mavenLocal()")
+            mavenLocal()
+        }
+    } ?: logger.error("TrueOG Bootstrap not found, defaulting to ~/.m2 for mavenLocal()")
     maven { url = uri("https://maven.plugily.xyz/releases") }
     maven { url = uri("https://maven.plugily.xyz/snapshots") }
     maven { url = uri("https://repo.citizensnpcs.co/") }
@@ -63,8 +81,20 @@ dependencies {
     compileOnly("net.citizensnpcs:citizensapi:2.0.26-SNAPSHOT") {
         exclude(group = "ch.ethz.globis.phtree", module = "phtree")
     }
-    implementation("plugily.projects:MiniGamesBox-Classic:1.4.5") { attributes { attribute(kotlinAttribute, true) } }
+    // Import TrueOG Network Utilities-OG Java API (from source), used for TrueOG color/gradient rendering.
+    // NEVER promote this to implementation: Utilities-OG shades the Kotlin stdlib and coroutines, and with
+    // isEnableRelocation = true below they would be rewritten under plugily.projects.shadow.* and break at
+    // runtime. compileOnly/compileOnlyApi stay off runtimeClasspath, so Shadow never bundles or relocates them.
+    compileOnlyApi(project(":libs:Utilities-OG"))
+    implementation("plugily.projects:MiniGamesBox-Classic:1.4.5")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.13.3") // Add JUnit API to testing environment.
+    // compileOnly/compileOnlyApi do not propagate to the test classpath, so restate what the tests need.
+    testImplementation("org.purpurmc.purpur:purpur-api:1.19.4-R0.1-SNAPSHOT") // Adventure lives here.
+    testImplementation(project(":libs:Utilities-OG")) // The colorizer under test.
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher") // Add JUnit engine to the testing runtime.
 }
+
+apply(from = "eclipse.gradle.kts") // Import eclipse classpath support script.
 
 /* ---------------------- Reproducible jars ---------------------------- */
 tasks.withType<AbstractArchiveTask>().configureEach { // Ensure reproducible .jars
@@ -84,6 +114,14 @@ tasks.shadowJar {
     exclude("plugily/projects/minigamesbox/classic/utils/services/metrics/MetricsService$*.class")
     exclude("plugily/projects/minigamesbox/classic/utils/services/UpdateChecker.class")
     exclude("plugily/projects/minigamesbox/classic/utils/services/UpdateChecker$*.class")
+    from("LICENSE.md") {
+        into("META-INF/licenses/BuildBattle-OG")
+        includeEmptyDirs = false
+    }
+    from(vendoredLicenseFiles) {
+        into("META-INF/licenses/libs")
+        includeEmptyDirs = false
+    }
     isEnableRelocation = true
     relocationPrefix = "${project.group}.shadow"
     relocate("com.zaxxer.hikari", "plugily.projects.buildbattle.database.hikari")
@@ -95,6 +133,11 @@ tasks.shadowJar {
 tasks.jar { archiveClassifier.set("part") } // Applies to root jarfile only.
 
 tasks.build { dependsOn(tasks.spotlessApply, tasks.shadowJar) } // Build depends on spotless and shadow.
+
+/* --------------------------------- Testing ---------------------------- */
+tasks.withType<Test>().configureEach {
+    useJUnitPlatform() // Enable testing with JUnit 5.
+}
 
 /* --------------------------- Javac opts ------------------------------- */
 tasks.withType<JavaCompile>().configureEach {
@@ -130,4 +173,22 @@ tasks.named("compileJava") {
 
 tasks.named("spotlessCheck") {
     dependsOn("spotlessApply") // Run spotless before checking if spotless ran.
+}
+
+/* ------------------------------ Eclipse SHIM ------------------------- */
+
+// This can't be put in eclipse.gradle.kts because Gradle is weird.
+// Qualifying subproject names keeps :libs:Utilities-OG from colliding with the standalone
+// Utilities-OG project that also lives in the Eclipse workspace.
+subprojects {
+    // ":libs" is only an implicit container created by include(":libs:Utilities-OG"). Applying the
+    // Java plugin to it produced a junk libs/build/libs/libs-BuildBattle-OG.jar next to the vendored
+    // dependency directories.
+    if (project.path == ":libs") {
+        return@subprojects
+    }
+    apply(plugin = "java-library")
+    apply(plugin = "eclipse")
+    eclipse.project.name = "${project.name}-${rootProject.name}"
+    tasks.withType<Jar>().configureEach { archiveBaseName.set("${project.name}-${rootProject.name}") }
 }

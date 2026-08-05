@@ -1,13 +1,19 @@
+# Arena instances.
+#
+# World names follow the Chat-OG multi world game convention: <prefix><number>-<map> for game worlds
+# and <prefix><number>-hub for the matching lobby world, so BB1-map and BB1-hub both belong to the
+# game key "BB". Chat-OG keys its per-game Discord channel off that prefix, so keep the two in sync
+# and add a matching "BB" entry under discord.games in Chat-OG's config.yml.
 instances:
   default:
-    lobbylocation: bb_lobby,-1.0,80.0,7.0,0.0,0.0
-    startlocation: bb_game_1,-1.0,80.0,7.0,0.0,0.0
-    endlocation: bb_lobby,-1.0,80.0,7.0,0.0,0.0
+    lobbylocation: BB1-hub,-1.0,80.0,7.0,0.0,0.0
+    startlocation: BB1-map,-1.0,80.0,7.0,0.0,0.0
+    endlocation: BB1-hub,-1.0,80.0,7.0,0.0,0.0
     minimumplayers: 2
     maximumplayers: 10
     plotmembersize: 1
     mapname: mapname
-    world: bb_game_1
+    world: BB1-map
     # classic (deprecated: solo), guess_the_build
     gametype: classic
     isdone: false

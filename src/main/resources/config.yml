@@ -53,6 +53,17 @@ MyWorlds:
 #   restrict_adventure_worlds list (guessers are put in adventure mode).
 # - Spawn-OG: keep arena worlds OUT of its login-safety.worlds list so reconnect
 #   handling stays with BuildBattle.
+# - Chat-OG: name arena worlds BB<n>-<map> and their lobby worlds BB<n>-hub, for
+#   example BB1-map and BB1-hub. Chat-OG resolves a world to a multi world game by
+#   that <letters><digits>- prefix and keys the per-game Discord channel off it, so
+#   the prefix must match an entry under discord.games in Chat-OG's config.yml
+#   (add "BB" there). Worlds named any other way stay in global chat.
+# - Utilities-OG: when installed, language.yml values that contain a MiniMessage
+#   tag or the &* rainbow code are rendered through TrueOG's colorizer, so
+#   <#rrggbb> hex, <gradient:...>, named colours and decorations all work. Values
+#   that only use plain & codes are passed through untouched, so nothing shipped
+#   changes appearance. Without the plugin, all values keep their default
+#   formatting.
 
 
 Commands:

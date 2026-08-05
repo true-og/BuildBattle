@@ -1,35 +1,110 @@
 # Changelog
 
-All notable OG-fork changes. Upstream history at https://github.com/Plugily-Projects/BuildBattle.
+All notable OG-fork changes are documented here. Upstream history is at
+https://github.com/Plugily-Projects/BuildBattle.
 
-## [5.1.4] - OG fork
+## 5.1.5 - 2026-08-05
 
-### Added
+### Changes
 
-- `/hub` command for returning players from BuildBattle lobbies or active games to the main world spawn.
-- Reconnect handling that returns players to the main world when they rejoin from an arena world or after quitting during a game.
-- Hub leave cleanup for arena membership, plot membership, scoreboards, bossbars, action bars, player visibility, and empty-game shutdown.
+- Scope creative mode to arena builders. `BuilderCreativeManager` grants a runtime
+  creative exemption only while a player is an active builder inside an arena world,
+  and suppresses GameModeInventories-OG's inventory swap for arena participants so
+  the swap cannot clobber armour and offhand contents.
+- Remember where a player was before they joined an arena. `PreJoinLocationStore`
+  keeps that location on disk, reloading an unloaded world through MyWorlds when it
+  is needed, and expires entries after `MyWorlds.PreJoin-Location-Expiry-Days`.
+- Add the `MyWorlds.Protected-Worlds` list so arenas, plots and lobby locations can
+  never be placed in the server's main overworld, nether or end.
+- Bundle `powerups.yml` and write it out on first start, so the shaded
+  MiniGamesBox-Classic reader stops logging "File powerups.yml does not exist!".
+- Suppress the shaded library's "Loaded locale" console spam.
+- Drop a dead clause from the console-noise filter. It tried to hide the
+  "you are using some fork that was not tested by us" warning, but that message is
+  written straight to the console sender rather than through the plugin logger the
+  filter is attached to, so the condition could never fire. That warning is
+  therefore still printed on startup; suppressing it needs a different mechanism
+  and is left for a later release. The "Loaded locale" suppression is unaffected
+  and still works.
+- **Breaking:** the bundled `arenas.yml` template now names its worlds `BB1-hub` and
+  `BB1-map` instead of `bb_lobby` and `bb_game_1`. Chat-OG resolves a world to a
+  multi-world game by a `<letters><digits>-` prefix and keys the per-game Discord
+  channel off it, so arena worlds have to follow that shape to get scoped chat and
+  the Discord relay. Existing arenas keep the names they already have — changing
+  the template does not migrate them. To adopt the convention, rename the world
+  folders and update both `arenas.yml` and your MyWorlds configuration, then add a
+  matching `BB` entry under `discord.games` in Chat-OG's config.
+- Render `language.yml` values through Utilities-OG's colorizer when that plugin is
+  installed, so MiniMessage tags, `<#rrggbb>` hex, `<gradient:...>`, named colours
+  and the `&*` rainbow code all work in messages, titles, action bars, scoreboards
+  and signs. Only values that actually contain such a construct are converted;
+  values using plain `&` codes are passed through byte-for-byte, so nothing that
+  ships with the plugin changes appearance. Without Utilities-OG, every value keeps
+  its previous formatting.
+- Remove seven permission nodes from `plugin.yml` that nothing ever checked:
+  `buildbattle.admin.stopgame`, `.addsign`, `.plotwand`, `.create`,
+  `.forcestart.theme`, `.supervotes.manage` and `buildbattle.command.bypass`. The
+  nodes that actually gate those behaviours are `buildbattle.admin.stop`,
+  `.admin.locwand`, `.admin.setup` and `.command.override`; grant those instead.
+  In particular, bypassing in-game command blocking has always required
+  `buildbattle.command.override`, which was never declared, while the declared
+  `buildbattle.command.bypass` did nothing.
+- Declare the permission nodes that were checked but never listed, including
+  `buildbattle.admin.setup`, `.stop`, `.locwand`, `.teleport`, `.spychat`,
+  `.statistic`, `.forceplay`, `.theme` and `buildbattle.command.selectplot`, so
+  `buildbattle.admin.*` grants the whole admin surface.
+- Disable the plugin instead of half-starting it when MyWorlds is missing. The
+  startup check returned early after the base plugin had already enabled, leaving
+  the server with a plugin marked enabled but no arenas, commands or listeners.
+- Suppress Guess The Build answers through Paper's `AsyncChatEvent` rather than the
+  legacy `AsyncPlayerChatEvent`. Registering a legacy chat listener forced the whole
+  server onto Paper's legacy chat path, and the handler raced Chat-OG for ownership
+  of the event, so a correct guess could reach the world and Discord before it was
+  suppressed.
+- Stop `/hub` registration from throwing when the command is absent from
+  `plugin.yml`.
+- Fix a malformed `Core-Version: 1148-` marker in `powerups.yml` that parsed as `0`
+  and would have left a duplicate `Do-Not-Edit` block behind on migration.
+- Report `1.19` as a supported version in `internal/data.yml`, and bring
+  `locales/locale_data.yml` up to the current release.
+- Build Utilities-OG from a git submodule, add `bootstrap.sh`, and harvest vendored
+  library licenses into `META-INF/licenses` automatically instead of listing them
+  one by one.
 
-### Removed
+## 5.1.4 - 2026-05-20
 
-- External telemetry, custom chart registration, bundled metrics implementation, and the metrics plugin id.
-- `hub` is whitelisted by default for in-arena command blocking.
-- Default sign lines now show `&4BuildBattle-OG`, arena name, arena state, and player count.
+### Changes
 
-## [5.1.3] — OG fork
+- Add a `/hub` command that returns players from BuildBattle lobbies or active games
+  to the main world spawn.
+- Return players to the main world when they reconnect from an arena world, or when
+  they quit mid-game.
+- Clean up arena membership, plot membership, scoreboards, bossbars, action bars,
+  player visibility and empty-game shutdown when a player leaves via `/hub`.
+- Whitelist `hub` by default for in-arena command blocking.
+- Show `&4BuildBattle-OG`, the arena name, its state and the player count on default
+  sign lines.
+- Remove external telemetry, custom chart registration, the bundled metrics
+  implementation and the metrics plugin id.
 
-### Removed
+## 5.1.3 - 2026-04-23
 
-- Plugily Projects service hooks. Upstream `ServiceRegistry.registerService()` pinged `https://api.plugily.xyz/ping.php` on enable and constructed `LocaleService` + `MetricsService`. Override skips the ping and leaves `serviceEnabled=false`, which transitively disables:
-  - Remote translation fetching from `api.plugily.xyz/locale/v3/fetch.php` (bundled `Default` locale is used instead).
-  - Automatic error reporting to `api.plugily.xyz/error/report.php` (`ReportedException` gates on `isServiceEnabled()` and short-circuits).
+### Changes
+
+- Remove the Plugily Projects service hooks. Upstream's `ServiceRegistry.registerService()`
+  pinged `https://api.plugily.xyz/ping.php` on enable and constructed `LocaleService`
+  and `MetricsService`. The override skips the ping and leaves `serviceEnabled=false`,
+  which also disables:
+  - remote translation fetching from `api.plugily.xyz/locale/v3/fetch.php`, so the
+    bundled `Default` locale is used instead;
+  - automatic error reporting to `api.plugily.xyz/error/report.php`, since
+    `ReportedException` gates on `isServiceEnabled()`;
   - Plugily's internal `MetricsService` timer.
-- Upstream `UpdateChecker`. Override returns a completed `UP_TO_DATE` result instead of hitting `api.spiget.org/v2/resources/{id}/versions`. Disables the on-enable update check and the OP-join notifier.
-
-### Changed
-
-- `build.gradle.kts` shadowJar excludes upstream `ServiceRegistry.class` and `UpdateChecker*.class` so the local overrides win after relocation.
-- Head cache fix.
-- MyWorlds fork compatibility and 1.19.4 API backport.
-- Gradle migration from Maven.
-- Project renamed to BuildBattle-OG.
+- Replace upstream's `UpdateChecker` with one that returns `UP_TO_DATE` instead of
+  calling `api.spiget.org`, disabling both the on-enable check and the OP-join
+  notifier.
+- Exclude the upstream `ServiceRegistry` and `UpdateChecker` classes from the shaded
+  jar so the local overrides win after relocation.
+- Fix the head cache.
+- Add MyWorlds fork compatibility and backport to the 1.19.4 API.
+- Migrate the build from Maven to Gradle and rename the project to BuildBattle-OG.

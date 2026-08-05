@@ -20,6 +20,7 @@
 
 package plugily.projects.buildbattle.arena;
 
+import io.papermc.paper.event.player.AsyncChatEvent;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Location;
@@ -36,7 +37,6 @@ import org.bukkit.event.hanging.HangingBreakByEntityEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCreativeEvent;
 import org.bukkit.event.inventory.InventoryType;
-import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
@@ -1078,8 +1078,16 @@ public class ArenaEvents extends PluginArenaEvents {
 
     }
 
-    @EventHandler
-    public void onGTBGuessChat(AsyncPlayerChatEvent event) {
+    // Uses Paper's AsyncChatEvent, not the legacy AsyncPlayerChatEvent: registering
+    // a legacy
+    // chat listener forces the whole server onto Paper's legacy chat path. LOWEST
+    // priority
+    // suppresses a correct guess before Chat-OG (NORMAL) cancels the event and
+    // builds its own
+    // recipient set, which would otherwise relay the answer to the world and to
+    // Discord.
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onGTBGuessChat(AsyncChatEvent event) {
 
         Player player = event.getPlayer();
         BaseArena arena = plugin.getArenaRegistry().getArena(player);
@@ -1126,8 +1134,9 @@ public class ArenaEvents extends PluginArenaEvents {
 
         }
 
-        if (gameArena.getCurrentBBTheme() == null || gameArena.getCurrentBBTheme().getThemes().stream()
-                .noneMatch(theme -> theme.equalsIgnoreCase(event.getMessage())))
+        String guess = PlainTextComponentSerializer.plainText().serialize(event.message());
+        if (gameArena.getCurrentBBTheme() == null
+                || gameArena.getCurrentBBTheme().getThemes().stream().noneMatch(theme -> theme.equalsIgnoreCase(guess)))
         {
 
             return;
