@@ -20,11 +20,16 @@
 
 package plugily.projects.buildbattle;
 
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Filter;
 import java.util.logging.LogRecord;
+import nl.skbotnl.chatog.api.ChatOGAPI;
 import org.bukkit.Location;
+import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.PluginCommand;
+import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.TestOnly;
 import plugily.projects.buildbattle.arena.ArenaEvents;
@@ -37,7 +42,11 @@ import plugily.projects.buildbattle.arena.vote.VoteItems;
 import plugily.projects.buildbattle.boot.AdditionalValueInitializer;
 import plugily.projects.buildbattle.boot.MessageInitializer;
 import plugily.projects.buildbattle.boot.PlaceholderInitializer;
+import plugily.projects.buildbattle.chat.BuildBattleChatFormatter;
+import plugily.projects.buildbattle.commands.ForceStartCommand;
 import plugily.projects.buildbattle.commands.HubCommand;
+import plugily.projects.buildbattle.commands.JoinLobbyCommand;
+import plugily.projects.buildbattle.commands.VoteCommandListener;
 import plugily.projects.buildbattle.commands.arguments.ArgumentsRegistry;
 import plugily.projects.buildbattle.handlers.LanguageMigrator;
 import plugily.projects.buildbattle.handlers.language.TrueOGLanguageManager;
@@ -46,10 +55,12 @@ import plugily.projects.buildbattle.handlers.misc.BlacklistManager;
 import plugily.projects.buildbattle.handlers.misc.BuilderCreativeManager;
 import plugily.projects.buildbattle.handlers.misc.HeadDatabaseManager;
 import plugily.projects.buildbattle.handlers.misc.MyWorldsManager;
+import plugily.projects.buildbattle.handlers.misc.PreJoinLocationListener;
 import plugily.projects.buildbattle.handlers.misc.PreJoinLocationStore;
 import plugily.projects.buildbattle.handlers.misc.ReconnectToMainWorldListener;
 import plugily.projects.buildbattle.handlers.setup.SetupCategoryManager;
 import plugily.projects.buildbattle.handlers.themes.ThemeManager;
+import plugily.projects.minigamesbox.api.arena.IPluginArena;
 import plugily.projects.minigamesbox.api.handlers.language.ILanguageManager;
 import plugily.projects.minigamesbox.classic.PluginMain;
 import plugily.projects.minigamesbox.classic.handlers.setup.SetupInventory;
@@ -204,6 +215,7 @@ public class Main extends PluginMain {
         builderCreativeManager = new BuilderCreativeManager(this);
         arenaRegistry.registerArenas();
         new ReconnectToMainWorldListener(this);
+        new PreJoinLocationListener(this);
         PluginCommand hubCommand = getCommand("hub");
         if (hubCommand != null) {
 
@@ -214,6 +226,12 @@ public class Main extends PluginMain {
             getLogger().warning("The 'hub' command is missing from plugin.yml, so /hub will not work.");
 
         }
+
+        registerCommand("bbjoin", new JoinLobbyCommand(this));
+        registerCommand("bbforcestart", new ForceStartCommand(this));
+        // Claims /v and /vote inside BuildBattle worlds before VotingPlugin sees them.
+        new VoteCommandListener(this);
+        registerChatFormatter();
 
         myWorldsManager.synchronizeArenaWorldInventories();
         getSignManager().loadSigns();
@@ -275,11 +293,136 @@ public class Main extends PluginMain {
 
     }
 
+    // Chat-OG routes a world to a game by the letter prefix of its name (BB1-hub
+    // and
+    // BB1-map both belong to key "BB"), so the formatter is registered once per
+    // distinct prefix across the configured arena worlds.
+    private void registerChatFormatter() {
+
+        if (getServer().getPluginManager().getPlugin("Chat-OG") == null) {
+
+            getLogger().info("Chat-OG is not installed, so BuildBattle chat keeps its default formatting.");
+            return;
+
+        }
+
+        Set<String> keys = new LinkedHashSet<>();
+        for (IPluginArena arena : getArenaRegistry().getArenas()) {
+
+            addGameKey(keys, arena.getLobbyLocation());
+            addGameKey(keys, arena.getStartLocation());
+
+        }
+
+        if (keys.isEmpty()) {
+
+            getLogger().warning("No arena world follows the <prefix><number>-<name> convention, so no BuildBattle "
+                    + "chat formatter was registered.");
+            return;
+
+        }
+
+        BuildBattleChatFormatter formatter = new BuildBattleChatFormatter(this);
+        for (String key : keys) {
+
+            if (!ChatOGAPI.setFormatter(key, formatter)) {
+
+                getLogger().warning("Chat-OG was not ready, so no chat formatter was registered for " + key + ".");
+
+            }
+
+        }
+
+    }
+
+    // Mirrors Chat-OG's own parse: letters, then digits, then '-'. Anything else is
+    // not part of a multi world game and contributes no key.
+    private static void addGameKey(Set<String> keys, Location location) {
+
+        if (location == null || location.getWorld() == null) {
+
+            return;
+
+        }
+
+        String worldName = location.getWorld().getName();
+        int index = 0;
+        while (index < worldName.length() && Character.isLetter(worldName.charAt(index))) {
+
+            index++;
+
+        }
+
+        if (index == 0) {
+
+            return;
+
+        }
+
+        int digitStart = index;
+        while (index < worldName.length() && Character.isDigit(worldName.charAt(index))) {
+
+            index++;
+
+        }
+
+        if (index == digitStart || index >= worldName.length() || worldName.charAt(index) != '-') {
+
+            return;
+
+        }
+
+        keys.add(worldName.substring(0, digitStart));
+
+    }
+
+    private void registerCommand(String name, CommandExecutor executor) {
+
+        PluginCommand command = getCommand(name);
+        if (command == null) {
+
+            getLogger()
+                    .warning("The '" + name + "' command is missing from plugin.yml, so /" + name + " will not work.");
+            return;
+
+        }
+
+        command.setExecutor(executor);
+        if (executor instanceof TabCompleter tabCompleter) {
+
+            command.setTabCompleter(tabCompleter);
+
+        }
+
+    }
+
     public void savePreJoinLocation(Player player) {
+
+        savePreJoinLocation(player.getUniqueId(), player.getLocation());
+
+    }
+
+    public void savePreJoinLocation(UUID playerId, Location location) {
+
+        if (preJoinLocationStore != null && location != null && location.getWorld() != null) {
+
+            preJoinLocationStore.put(playerId, location);
+
+        }
+
+    }
+
+    public boolean hasPreJoinLocation(UUID playerId) {
+
+        return preJoinLocationStore != null && preJoinLocationStore.getWorldName(playerId) != null;
+
+    }
+
+    public void removePreJoinLocation(UUID playerId) {
 
         if (preJoinLocationStore != null) {
 
-            preJoinLocationStore.put(player.getUniqueId(), player.getLocation());
+            preJoinLocationStore.remove(playerId);
 
         }
 
@@ -303,6 +446,13 @@ public class Main extends PluginMain {
     @Override
     public void onDisable() {
 
+        // Order matters on /reload, where players stay online. super.onDisable() stops
+        // every arena, which restores inventories through MiniGamesBox; lifting the
+        // GameModeInventories suspension before that lets GMI swap mid-restore and file
+        // arena state as the player's real survival inventory. The location store is
+        // flushed last so anything teardown changes still reaches disk.
+        super.onDisable();
+
         if (builderCreativeManager != null) {
 
             builderCreativeManager.revokeAll();
@@ -314,8 +464,6 @@ public class Main extends PluginMain {
             preJoinLocationStore.shutdown();
 
         }
-
-        super.onDisable();
 
     }
 

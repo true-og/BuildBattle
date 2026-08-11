@@ -5,7 +5,7 @@
 # game key "BB". Chat-OG keys its per-game Discord channel off that prefix, so keep the two in sync
 # and add a matching "BB" entry under discord.games in Chat-OG's config.yml.
 instances:
-  default:
+  BB1:
     lobbylocation: BB1-hub,-1.0,80.0,7.0,0.0,0.0
     startlocation: BB1-map,-1.0,80.0,7.0,0.0,0.0
     endlocation: BB1-hub,-1.0,80.0,7.0,0.0,0.0

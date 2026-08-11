@@ -13,8 +13,17 @@ in chat for points.
 
 This fork makes no outside service calls. Upstream's update checker, remote translation fetching, error
 reporting and metrics are all stubbed out, so the bundled `Default` locale is always used and nothing phones
-home. It also adds `/hub` and reconnect handling so players reliably get back to the main world from an arena,
-and integrates with the rest of the TrueOG plugin set (see [Integrations](#integrations)).
+home. It also adds `/hub`, `/bbjoin`, `/bbforcestart` and reconnect handling so players reliably get back to
+the main world from an arena, and integrates with the rest of the TrueOG plugin set (see
+[Integrations](#integrations)).
+
+Return locations are recorded whenever a player enters an arena world by any route — `/bbjoin`, `/bb join`, a
+portal, or `/mw tp` — and are kept on disk, so `/hub`, a relog, a respawn or a server restart all put the
+player back where they started rather than at main world spawn.
+
+`/v` and `/vote` are claimed inside BuildBattle worlds before any other plugin sees them, so VotingPlugin
+cannot take the `/vote` label away from theme voting. BuildBattle has no map pool to vote on, so the command
+drives the theme poll the vote menu already owns rather than adding a second one.
 
 ## Requirements
 
@@ -45,10 +54,17 @@ Arena worlds must be named `BB<n>-<map>` and their lobby worlds `BB<n>-hub`, for
 per-game Discord channel off it, so the `BB` prefix must also exist under `discord.games` in **Chat-OG's**
 `config.yml`. Worlds named any other way simply stay in global chat — everything else still works.
 
+Arena ids follow the same convention, so the arena that owns `BB1-hub` and `BB1-map` is named `BB1`. `/bbjoin`
+accepts the id case-insensitively and also accepts the bare number, so `/bbjoin BB1`, `/bbjoin bb1` and
+`/bbjoin 1` are the same command. A bare number that matches more than one arena is refused rather than
+guessed.
+
 > **Upgrading from 5.1.4 or earlier:** the bundled `arenas.yml` template changed from `bb_lobby` / `bb_game_1`
-> to `BB1-hub` / `BB1-map`. Existing arenas keep whatever names they already have; changing the template does
-> not migrate them. To adopt the convention, rename the world folders and update both `arenas.yml` and your
-> MyWorlds configuration to match.
+> to `BB1-hub` / `BB1-map`, and its arena id from `default` to `BB1`. Existing arenas keep whatever names they
+> already have; changing the template does not migrate them. To adopt the convention: stop the server, rename
+> the world folders, then update the arena id, the three location lines and `world:` in `arenas.yml` along with
+> your MyWorlds `worlds.yml` and `inventories.yml` entries. Until the worlds are renamed, `/bbjoin <number>`
+> cannot resolve the arena and no chat formatter is registered.
 
 ## Configuration
 
@@ -72,7 +88,7 @@ Arenas live in `arenas.yml`:
 
 ```yaml
 instances:
-  default:
+  BB1:
     lobbylocation: BB1-hub,-1.0,80.0,7.0,0.0,0.0
     startlocation: BB1-map,-1.0,80.0,7.0,0.0,0.0
     endlocation: BB1-hub,-1.0,80.0,7.0,0.0,0.0
@@ -97,7 +113,7 @@ Themes are in `themes.yml`, messages in `language.yml`, and per-player statistic
 |--------|-----------------------|
 | `MyWorlds` / `My_Worlds` | **Required.** Arena world management, per-world inventories and chat. |
 | `Utilities-OG` | `language.yml` values containing a MiniMessage tag or the `&*` rainbow code render through TrueOG's colorizer, enabling `<#rrggbb>` hex, `<gradient:...>`, named colours and decorations. Plain `&`-coded values are passed through byte-for-byte, so nothing shipped changes appearance. Without the plugin, all values keep their default formatting. |
-| `Chat-OG` | Arena chat is scoped per world and mirrored to the game's Discord channel, provided worlds follow the [naming convention](#world-naming) and `discord.games.BB` exists in Chat-OG's config. |
+| `Chat-OG` | Arena chat is scoped per world, styled by BuildBattle-OG's own formatter, and mirrored to the game's Discord channel, provided worlds follow the [naming convention](#world-naming) and `discord.games.BB` exists in Chat-OG's config. The formatter shows the player count in the lobby, `VOTE` and `JUDGING` during the voting phases, and the theme while building — never in Guess The Build, where the theme is the answer. |
 | `GameModeInventories-OG` | Builders get a creative exemption scoped to arena worlds at runtime. Do **not** grant regular players `gamemodeinventories.toggle` or `gamemodeinventories.anywhere`, and keep arena worlds **out** of `restrict_adventure_worlds` — guessers are put in adventure mode. |
 | `Spawn-OG` | Keep arena worlds **out** of its `login-safety.worlds` list so reconnect handling stays with BuildBattle-OG. |
 | `Citizens` | Enables `/bba addnpc` for plot NPCs. |
@@ -113,8 +129,10 @@ inherited from MiniGamesBox.
 
 | Command | Permission | Description |
 |---------|------------|-------------|
+| `/bbjoin [lobby]` | — | Join a lobby by id (`BB1`, or just `1`); no argument lists the open lobbies |
 | `/bb join <arena>` | — | Join an arena |
 | `/bb randomjoin` | — | Join any arena with room |
+| `/vote [#]` or `/v [#]` | — | List the themes up for voting and cast a vote |
 | `/bb leave` | — | Leave the current arena |
 | `/bb arenas` | `buildbattle.arenas` | Open the arena selector |
 | `/bb menu` | — | Open the plot options menu |
@@ -134,6 +152,7 @@ inherited from MiniGamesBox.
 | `/bba list` | `buildbattle.admin.list` | List arenas and their states |
 | `/bba reload` | `buildbattle.admin.reload` | Reload configuration |
 | `/bba stop` | `buildbattle.admin.stop` | Stop the running game |
+| `/bbforcestart [time]` | `buildbattle.admin.forcestart` | Start the game ignoring `minimumplayers` |
 | `/bba forcestart` | `buildbattle.admin.forcestart` | Force the game to start |
 | `/bba forceplay <arena> <theme>` | `buildbattle.admin.forceplay` | Force an arena to play a theme |
 | `/bba settheme <theme>` | `buildbattle.admin.settheme` | Set the current arena's theme |

@@ -86,6 +86,7 @@ dependencies {
     // isEnableRelocation = true below they would be rewritten under plugily.projects.shadow.* and break at
     // runtime. compileOnly/compileOnlyApi stay off runtimeClasspath, so Shadow never bundles or relocates them.
     compileOnlyApi(project(":libs:Utilities-OG"))
+    compileOnly(files("libs/Chat-OG/Chat-OG.jar")) // Import Chat-OG API for world chat formatting.
     implementation("plugily.projects:MiniGamesBox-Classic:1.4.5")
     testImplementation("org.junit.jupiter:junit-jupiter:5.13.3") // Add JUnit API to testing environment.
     // compileOnly/compileOnlyApi do not propagate to the test classpath, so restate what the tests need.
