@@ -3,6 +3,21 @@
 All notable OG-fork changes are documented here. Upstream history is at
 https://github.com/Plugily-Projects/BuildBattle.
 
+## 5.1.6 - 2026-08-17
+
+### Changes
+
+- Join signs now match TheHerobrine-OG's style: gold map name, black-on-sign
+  player counts, and bold `JOIN` / `STARTING` / `LIVE` / `FULL` / `ENDING` /
+  `RESTARTING` state labels. A language-file migration (version 3) rewrites the
+  sign lines and `Placeholders.Game-States` on existing installs while leaving
+  the MOTD state labels unchanged.
+
+- Arena chat now renders the standard TrueOG name segment (union bracket tag,
+  display name, LuckPerms suffix) like TheHerobrine-OG, with a caret colored by
+  the sender's Chat-OG message color, while keeping the queue count, `SPEC`,
+  `VOTE` / `JUDGING`, and theme prefixes.
+
 ## 5.1.5 - 2026-08-05
 
 ### Changes

@@ -2,8 +2,9 @@ package plugily.projects.buildbattle.chat;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.JoinConfiguration;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
+import net.trueog.utilitiesog.UtilitiesOG;
 import nl.skbotnl.chatog.api.WorldChatFormatter;
 import org.bukkit.entity.Player;
 
@@ -19,9 +20,14 @@ import plugily.projects.minigamesbox.api.arena.IArenaState;
 // default format instead of being labelled as a competitor.
 //
 // The theme is never rendered for Guess the Build: it is the answer, and Discord relays this line.
+//
+// The name segment mirrors TheHerobrine-OG's formatter: the standard TrueOG
+// union bracket tag, display name, and LuckPerms suffix, expanded through
+// MiniPlaceholders with the sender as the audience so the same content reaches
+// the in-game view and the Discord relay.
 public class BuildBattleChatFormatter implements WorldChatFormatter {
 
-    private static final LegacyComponentSerializer LEGACY_SERIALIZER = LegacyComponentSerializer.legacyAmpersand();
+    private static final String NAME_SEGMENT = "<simpleclans_union_bracket_tag><player_display_name><luckperms_suffix> ";
 
     private final Main plugin;
 
@@ -41,21 +47,23 @@ public class BuildBattleChatFormatter implements WorldChatFormatter {
 
         }
 
+        final Component prefix = UtilitiesOG.trueogExpand(buildPrefix(sender, arena), sender);
+
+        // The caret never inherits bold or colors from the prefix.
+        final Component caret = UtilitiesOG.trueogExpand(getCaretColor(sender) + "> &r", sender)
+                .decoration(TextDecoration.BOLD, false);
+
         // The message is already sanitised by Chat-OG, so it is composed with rather
         // than re-parsed.
-        return Component.join(JoinConfiguration.noSeparators(),
-                LEGACY_SERIALIZER.deserialize(buildPrefix(sender, arena)), message);
+        return Component.join(JoinConfiguration.noSeparators(), prefix, caret, message);
 
     }
 
     private String buildPrefix(Player player, BaseArena arena) {
 
-        String plainName = PlainTextComponentSerializer.plainText().serialize(player.displayName());
-        String name = "&9" + plainName + "&8 » &r";
-
         if (arena.getSpectators().contains(player)) {
 
-            return "&8&lSPEC &8▏ &7" + plainName + "&8 » &7";
+            return "&4SPEC &8▏ " + NAME_SEGMENT;
 
         }
 
@@ -64,31 +72,62 @@ public class BuildBattleChatFormatter implements WorldChatFormatter {
                 || state == IArenaState.FULL_GAME)
         {
 
-            return "&e" + arena.getPlayers().size() + "&7/&e" + arena.getMaximumPlayers() + "&8 ▏ " + name;
+            return "&e" + arena.getPlayers().size() + "&7/&e" + arena.getMaximumPlayers() + "&8 ▏ " + NAME_SEGMENT;
 
         }
 
         if (state != IArenaState.IN_GAME) {
 
-            return name;
+            return NAME_SEGMENT;
 
         }
 
         switch (arena.getArenaInGameState()) {
 
             case THEME_VOTING:
-                return "&6VOTE &8▏ " + name;
+                return "&6VOTE &8▏ " + NAME_SEGMENT;
             case PLOT_VOTING:
-                return "&6JUDGING &8▏ " + name;
+                return "&6JUDGING &8▏ " + NAME_SEGMENT;
             case BUILD_TIME:
                 // Only a classic/team arena has a theme worth showing; leaking a Guess the
                 // Build theme here would hand the answer to the world and to Discord.
                 String theme = arena instanceof BuildArena ? arena.getTheme() : null;
-                return theme == null || theme.isEmpty() ? name : "&a" + theme + " &8▏ " + name;
+                return theme == null || theme.isEmpty() ? NAME_SEGMENT : "&a" + theme + " &8▏ " + NAME_SEGMENT;
             default:
-                return name;
+                return NAME_SEGMENT;
 
         }
+
+    }
+
+    // TODO: Expose PlayerUtils.getMessageColor in Chat-OG as a supported API.
+    private String getCaretColor(Player player) {
+
+        try {
+
+            final net.kyori.adventure.text.format.TextColor color = nl.skbotnl.chatog.util.PlayerUtils.INSTANCE
+                    .getMessageColor(player.getUniqueId());
+            if (color != null) {
+
+                if (color.equals(NamedTextColor.WHITE)) {
+
+                    return "&f";
+
+                } else if (color.equals(NamedTextColor.GRAY)) {
+
+                    return "&7";
+
+                }
+
+            }
+
+        } catch (Throwable ignored) {
+
+            // Chat-OG internals moved or are absent -- fall back to dark gray.
+
+        }
+
+        return "&8";
 
     }
 

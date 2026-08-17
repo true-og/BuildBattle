@@ -39,7 +39,7 @@ import java.io.File;
 public class LanguageMigrator {
 
     public enum PluginFileVersion {
-        /* ARENA_SELECTOR(0), */ BUNGEE(1), CONFIG(1), LANGUAGE(2), /* LEADERBOARDS(0), */ MYSQL(1), PERMISSIONS(1),
+        /* ARENA_SELECTOR(0), */ BUNGEE(1), CONFIG(1), LANGUAGE(3), /* LEADERBOARDS(0), */ MYSQL(1), PERMISSIONS(1),
         /* SIGNS(0), */ SPECIAL_ITEMS(1), SPECTATOR(1)/* , STATS(0) */, MAIN_MENU(1);
 
         private final int version;
@@ -119,6 +119,31 @@ public class LanguageMigrator {
                     case 1:
                         MigratorUtils.insertAfterLine(file, "      Heads:",
                                 "        Database:\n" + "          Lore: \"Get Head %value%\"");
+                        break;
+                    case 2:
+                        // Herobrine-OG-style join signs: gold map name, black
+                        // player counts, and bold JOIN/STARTING/LIVE/FULL/ENDING
+                        // state labels. removeLineFromFile drops every line
+                        // containing the needle, so the Starting/Restarting
+                        // removals also clear the identical Motd entries, which
+                        // are re-inserted unchanged below.
+                        MigratorUtils.removeLineFromFile(file, "- \"%arena_name%\"");
+                        MigratorUtils.removeLineFromFile(file, "- \"[%arena_players_size%/%arena_max_players%]\"");
+                        MigratorUtils.insertAfterLine(file, "- \"&4BuildBattle-OG\"", "    - \"&6%arena_name%\"");
+                        MigratorUtils.insertAfterLine(file, "- \"%arena_state_placeholder%\"",
+                                "    - \"&0%arena_players_size%&8/&0%arena_max_players%\"");
+                        MigratorUtils.removeLineFromFile(file, "Waiting: \"&lWaiting for players...\"");
+                        MigratorUtils.removeLineFromFile(file, "Starting: \"&6&lStarting\"");
+                        MigratorUtils.removeLineFromFile(file, "Full-Game: \"&4&lFULL\"");
+                        MigratorUtils.removeLineFromFile(file, "In-Game: \"&lIn-game\"");
+                        MigratorUtils.removeLineFromFile(file, "Ending: \"&lEnding\"");
+                        MigratorUtils.removeLineFromFile(file, "Restarting: \"&4&lRestarting\"");
+                        MigratorUtils.insertAfterLine(file, "Game-States:",
+                                "    Waiting: \"&2&lJOIN\"\n" + "    Starting: \"&5&lSTARTING\"\n"
+                                        + "    Full-Game: \"&4&lFULL\"\n" + "    In-Game: \"&3&lLIVE\"\n"
+                                        + "    Ending: \"&8&lENDING\"\n" + "    Restarting: \"&8&lRESTARTING\"");
+                        MigratorUtils.insertAfterLine(file, "Motd:",
+                                "    Starting: \"&6&lStarting\"\n" + "    Restarting: \"&4&lRestarting\"");
                         break;
                     default:
                         break;

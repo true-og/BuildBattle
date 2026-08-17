@@ -465,9 +465,9 @@ Signs:
   Removed: "%plugin_prefix% Sign successfully removed!"
   Lines:
     - "&4BuildBattle-OG"
-    - "%arena_name%"
+    - "&6%arena_name%"
     - "%arena_state_placeholder%"
-    - "[%arena_players_size%/%arena_max_players%]"
+    - "&0%arena_players_size%&8/&0%arena_max_players%"
 
 
 #
@@ -500,13 +500,14 @@ Validator:
 # Placeholder messages inside plugin
 #
 Placeholders:
+  # Herobrine-OG-style join sign statuses.
   Game-States:
-    Waiting: "&lWaiting for players..."
-    Starting: "&6&lStarting"
+    Waiting: "&2&lJOIN"
+    Starting: "&5&lSTARTING"
     Full-Game: "&4&lFULL"
-    In-Game: "&lIn-game"
-    Ending: "&lEnding"
-    Restarting: "&4&lRestarting"
+    In-Game: "&3&lLIVE"
+    Ending: "&8&lENDING"
+    Restarting: "&8&lRESTARTING"
   Motd:
     Waiting: "&lYou can join this game..."
     Starting: "&6&lStarting"
@@ -573,5 +574,5 @@ Leaderboard:
 # Really, don't edit ;p
 # You edited it, huh? Next time hurt yourself!
 Do-Not-Edit:
-  File-Version: 2
+  File-Version: 3
   Core-Version: 2
