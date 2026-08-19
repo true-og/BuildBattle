@@ -46,6 +46,26 @@ Optional, integrated when present: `Utilities-OG`, `Chat-OG`, `GameModeInventori
 5. Use `/bba addplot <arena>` with the location wand to mark each build plot.
 6. Set `/bba settheme <theme>`, or leave the bundled `themes.yml` list in place.
 7. Run `/bba reload`, then join with `/bb join <arena>`.
+8. Optionally place join signs in the hub so players can join without commands (see [Join Signs](#join-signs)).
+
+## Join Signs
+
+Admins can place physical signs that players right-click to join an arena. Signs render the four lines from
+`Signs.Lines` in `language.yml` (title, arena name, game state, player counts) and update automatically. With
+`Sign-Block-States: true` in `config.yml`, the block behind the sign also changes color with the game state
+(white waiting, yellow starting, orange in game, gray ending, black restarting).
+
+To set one up:
+
+1. Make sure the arena exists (`/bba setup create <arena>`, see Quick Setup above).
+2. Place a sign in a persistent world such as the server hub — not in the `BB<n>-map`/`BB<n>-hub` worlds,
+   which are recreated between games.
+3. Write `[buildbattle]` on the first line and the arena id (e.g. `BB1`) on the second line. Requires the
+   `buildbattle.admin.sign.create` permission.
+4. The sign reformats immediately; right-clicking it joins that arena.
+
+Sign locations are saved under the arena's `signs:` list in `arenas.yml`. Breaking a registered sign requires
+`buildbattle.admin.sign.break` and removes it from the arena.
 
 ## World naming
 
