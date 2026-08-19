@@ -34,9 +34,9 @@ Bungee-Mode: false
 Inventory-Manager: true
 
 MyWorlds:
-  # BuildBattle requires My_Worlds and will enable these MyWorlds settings on startup.
+  # BuildBattle requires My_Worlds and will apply these MyWorlds settings on startup.
   Enable-World-Inventories: true
-  Enable-World-Chat: true
+  Enable-World-Chat: false
   # BuildBattle arenas, plots and lobby locations are blocked from these worlds.
   # Keep this set to your server's main overworld/nether/end worlds.
   Protected-Worlds:

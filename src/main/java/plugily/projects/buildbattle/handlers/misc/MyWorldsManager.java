@@ -257,7 +257,7 @@ public class MyWorldsManager {
         YamlConfiguration configuration = YamlConfiguration.loadConfiguration(configFile);
 
         boolean enableWorldInventories = plugin.getConfig().getBoolean("MyWorlds.Enable-World-Inventories", true);
-        boolean enableWorldChat = plugin.getConfig().getBoolean("MyWorlds.Enable-World-Chat", true);
+        boolean enableWorldChat = plugin.getConfig().getBoolean("MyWorlds.Enable-World-Chat", false);
         boolean inventoriesChanged = false;
         boolean chatChanged = false;
         boolean changed = false;
