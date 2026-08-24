@@ -42,6 +42,7 @@ import plugily.projects.buildbattle.arena.vote.VoteItems;
 import plugily.projects.buildbattle.boot.AdditionalValueInitializer;
 import plugily.projects.buildbattle.boot.MessageInitializer;
 import plugily.projects.buildbattle.boot.PlaceholderInitializer;
+import plugily.projects.buildbattle.boot.TrueOGPlaceholderInitializer;
 import plugily.projects.buildbattle.chat.BuildBattleChatFormatter;
 import plugily.projects.buildbattle.commands.ForceStartCommand;
 import plugily.projects.buildbattle.commands.HubCommand;
@@ -59,6 +60,7 @@ import plugily.projects.buildbattle.handlers.misc.PreJoinLocationListener;
 import plugily.projects.buildbattle.handlers.misc.PreJoinLocationStore;
 import plugily.projects.buildbattle.handlers.misc.ReconnectToMainWorldListener;
 import plugily.projects.buildbattle.handlers.setup.SetupCategoryManager;
+import plugily.projects.buildbattle.handlers.stats.BuildBattleScores;
 import plugily.projects.buildbattle.handlers.themes.ThemeManager;
 import plugily.projects.minigamesbox.api.arena.IPluginArena;
 import plugily.projects.minigamesbox.api.handlers.language.ILanguageManager;
@@ -84,6 +86,7 @@ public class Main extends PluginMain {
     private PreJoinLocationStore preJoinLocationStore;
     private BuilderCreativeManager builderCreativeManager;
     private ILanguageManager languageManager;
+    private BuildBattleScores buildBattleScores;
 
     @TestOnly
     public Main() {
@@ -138,6 +141,15 @@ public class Main extends PluginMain {
         messageInitializer.registerMessages();
         new AdditionalValueInitializer(this);
         initializePluginClasses();
+        // After AdditionalValueInitializer, which registers the POINTS_TOTAL statistic
+        // this reads.
+        buildBattleScores = new BuildBattleScores(this);
+        if (getServer().getPluginManager().getPlugin("Utilities-OG") != null) {
+
+            new TrueOGPlaceholderInitializer(buildBattleScores);
+
+        }
+
         getDebugger().debug("Full {0} plugin enabled", getName());
         getDebugger().debug("[System] [Plugin] Initialization finished took {0}ms", System.currentTimeMillis() - start);
 
@@ -278,6 +290,12 @@ public class Main extends PluginMain {
     public PlotMenuHandler getPlotMenuHandler() {
 
         return plotMenuHandler;
+
+    }
+
+    public BuildBattleScores getBuildBattleScores() {
+
+        return buildBattleScores;
 
     }
 

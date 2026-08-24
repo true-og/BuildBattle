@@ -3,6 +3,20 @@
 All notable OG-fork changes are documented here. Upstream history is at
 https://github.com/Plugily-Projects/BuildBattle.
 
+## 5.1.7 - 2026-08-24
+
+### Changes
+
+- Register `<bb_score>` and `<bb_rank>` MiniPlaceholders through Utilities-OG.
+  `<bb_score>` is the player's `POINTS_TOTAL`; `<bb_rank>` maps it onto a
+  builder-themed ladder (Apprentice through Master Builder, then Inception's
+  Forger, Dreamer, Extractor and Dom), with Dreamweaver reserved for
+  the top scorer once they also hold Dom.
+
+- Back both with a plugin-wide score cache seeded from the stats backend on
+  enable and kept live by MiniGamesBox's statistic change event, so values are
+  current the moment a game's points are awarded.
+
 ## 5.1.6 - 2026-08-17
 
 ### Changes

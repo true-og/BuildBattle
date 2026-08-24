@@ -27,7 +27,7 @@ java {
 /* ----------------------------- Metadata ------------------------------ */
 group = "plugily.projects"
 
-version = "5.1.6"
+version = "5.1.7"
 
 description = "BuildBattle-OG" // Declare plugin description.
 

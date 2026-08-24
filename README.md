@@ -127,12 +127,22 @@ instances:
 Themes are in `themes.yml`, messages in `language.yml`, and per-player statistics use `mysql.yml` when
 `Database.Enabled` is on.
 
+## Placeholders
+
+Registered through Utilities-OG as MiniPlaceholders, resolved for the viewing player, and updated the
+moment a game's points are awarded:
+
+| Placeholder | Value |
+|-------------|-------|
+| `<bb_score>` | The player's `POINTS_TOTAL` |
+| `<bb_rank>` | Colored rank name for that score: Apprentice (0), Builder (100), Bricklayer (300), Carpenter (750), Mason (1,500), Craftsman (3,000), Architect (6,000), Engineer (10,000), Sculptor (15,000), Master Builder (25,000), Forger (40,000), Dreamer (60,000), Extractor (100,000), Dom (150,000); Dreamweaver for the top player once they also reach Dom |
+
 ## Integrations
 
 | Plugin | Effect when installed |
 |--------|-----------------------|
 | `MyWorlds` / `My_Worlds` | **Required.** Arena world management, per-world inventories and chat. |
-| `Utilities-OG` | `language.yml` values containing a MiniMessage tag or the `&*` rainbow code render through TrueOG's colorizer, enabling `<#rrggbb>` hex, `<gradient:...>`, named colours and decorations. Plain `&`-coded values are passed through byte-for-byte, so nothing shipped changes appearance. Without the plugin, all values keep their default formatting. |
+| `Utilities-OG` | Registers the `<bb_score>` and `<bb_rank>` [placeholders](#placeholders). `language.yml` values containing a MiniMessage tag or the `&*` rainbow code render through TrueOG's colorizer, enabling `<#rrggbb>` hex, `<gradient:...>`, named colours and decorations. Plain `&`-coded values are passed through byte-for-byte, so nothing shipped changes appearance. Without the plugin, all values keep their default formatting. |
 | `Chat-OG` | Arena chat is scoped per world, styled by BuildBattle-OG's own formatter, and mirrored to the game's Discord channel, provided worlds follow the [naming convention](#world-naming) and `discord.games.BB` exists in Chat-OG's config. The formatter shows the player count in the lobby, `VOTE` and `JUDGING` during the voting phases, and the theme while building — never in Guess The Build, where the theme is the answer. |
 | `GameModeInventories-OG` | Builders get a creative exemption scoped to arena worlds at runtime. Do **not** grant regular players `gamemodeinventories.toggle` or `gamemodeinventories.anywhere`, and keep arena worlds **out** of `restrict_adventure_worlds` — guessers are put in adventure mode. |
 | `Spawn-OG` | Keep arena worlds **out** of its `login-safety.worlds` list so reconnect handling stays with BuildBattle-OG. |
